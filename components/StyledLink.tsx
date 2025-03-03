@@ -11,4 +11,3 @@ const StyledLink = styled(Link)(({ theme }) => ({
 }));
 
 export default StyledLink;
-

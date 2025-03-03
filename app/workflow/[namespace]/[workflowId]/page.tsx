@@ -125,7 +125,7 @@ export default function Page({
   let endpoint = `/api/koreo/${params.namespace}/workflows/${params.workflowId}/graph`;
   const queryParams = new URLSearchParams();
   if (selectedInstance) {
-      queryParams.set("instance", selectedInstance);
+    queryParams.set("instance", selectedInstance);
   }
   queryParams.set("expanded", expanded.toString());
   endpoint += `?${queryParams.toString()}`;
@@ -151,51 +151,58 @@ export default function Page({
       {instances.length > 0 && (
         <Panel key={"instance"} position={"top-left"}>
           <Box display="flex" alignItems="center" gap={2}>
-          <FormControl sx={{ m: 1, minWidth: 240 }} size="small">
-            <InputLabel id="instance-selector-label">Instance</InputLabel>
-            <Select
-              labelId="instance-selector-label"
-              value={selectedInstance}
-              label="Instance"
-              variant={"outlined"}
-              onChange={(e) => setSelectedInstance(e.target.value)}
-              sx={{
-                backgroundColor: "white",
-              }}
-              IconComponent={selectedInstance ? () => null : ArrowDropDownIcon}
-            >
-              {instances.map((instance) => (
-                <MenuItem key={instance} value={instance}>
-                  {instance}
-                </MenuItem>
-              ))}
-            </Select>
-            {selectedInstance && (
-              <IconButton
-                size="small"
-                onClick={() => setSelectedInstance("")}
+            <FormControl sx={{ m: 1, minWidth: 240 }} size="small">
+              <InputLabel id="instance-selector-label">Instance</InputLabel>
+              <Select
+                labelId="instance-selector-label"
+                value={selectedInstance}
+                label="Instance"
+                variant={"outlined"}
+                onChange={(e) => setSelectedInstance(e.target.value)}
                 sx={{
-                  position: "absolute",
-                  right: 8,
-                  top: "50%",
-                  transform: "translateY(-50%)",
+                  backgroundColor: "white",
                 }}
+                IconComponent={
+                  selectedInstance ? () => null : ArrowDropDownIcon
+                }
               >
-                <CloseIcon />
-              </IconButton>
-            )}
-          </FormControl>
-          <FormControlLabel
-            control={<Checkbox checked={expanded} onChange={(e) => setExpanded(e.target.checked)} />}
-            label={
+                {instances.map((instance) => (
+                  <MenuItem key={instance} value={instance}>
+                    {instance}
+                  </MenuItem>
+                ))}
+              </Select>
+              {selectedInstance && (
+                <IconButton
+                  size="small"
+                  onClick={() => setSelectedInstance("")}
+                  sx={{
+                    position: "absolute",
+                    right: 8,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              )}
+            </FormControl>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={expanded}
+                  onChange={(e) => setExpanded(e.target.checked)}
+                />
+              }
+              label={
                 <Box display="flex" alignItems="center" gap={1}>
                   Expanded
                   <Tooltip title="Expand nested nodes like RefSwitches and Sub-Workflows into their constituent nodes">
                     <HelpOutlineIcon fontSize="small" />
                   </Tooltip>
                 </Box>
-              } 
-          />
+              }
+            />
           </Box>
         </Panel>
       )}

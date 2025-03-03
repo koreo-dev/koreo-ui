@@ -6,7 +6,7 @@ import {
 import { NodeStatus } from "@/lib/diagrams";
 
 export const parseCrdForStatus = (
-  crds: (KubernetesObjectWithSpecAndStatus | null | undefined)[]
+  crds: (KubernetesObjectWithSpecAndStatus | null | undefined)[],
 ): NodeStatus => {
   let aggregatedStatus: NodeStatus = NodeStatus.healthy;
 
@@ -60,17 +60,17 @@ export const parseCrdForStatus = (
 };
 
 export const timeAgoReadyCondition = (
-  status: KubernetesStatus | null | undefined
+  status: KubernetesStatus | null | undefined,
 ): string => {
   const readyCondition = status?.conditions?.find(
-    (condition) => condition.reason == "Ready"
+    (condition) => condition.reason == "Ready",
   );
   if (readyCondition) {
     return timeAgo(readyCondition, false);
   }
 
   const upToDateCondition = status?.conditions?.find(
-    (condition) => condition.reason == "UpToDate"
+    (condition) => condition.reason == "UpToDate",
   );
   if (upToDateCondition) {
     return timeAgo(upToDateCondition, true);
@@ -81,7 +81,7 @@ export const timeAgoReadyCondition = (
 export const timeAgo = (
   condition: KubernetesCondition,
   transition: boolean,
-  excludePrefix?: boolean
+  excludePrefix?: boolean,
 ): string => {
   let prefix = transition ? "Last Transitioned: " : "Last Reconciled: ";
   if (excludePrefix) {
@@ -99,7 +99,7 @@ export const timeAgo = (
   const date = new Date(
     transition
       ? condition?.lastTransitionTime || ""
-      : condition?.lastUpdateTime || condition?.lastTransitionTime || ""
+      : condition?.lastUpdateTime || condition?.lastTransitionTime || "",
   );
   const diff = new Date().getTime() - date.getTime();
   const elapsed = Math.abs(diff);
@@ -119,7 +119,7 @@ export const timeAgo = (
 };
 
 export const getResourceDisplayName = (
-  resource: KubernetesObjectWithSpecAndStatus | undefined
+  resource: KubernetesObjectWithSpecAndStatus | undefined,
 ): string => {
   const spec = resource?.spec;
   if (typeof spec === "object" && spec !== null && "displayName" in spec) {

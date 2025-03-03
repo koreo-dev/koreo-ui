@@ -3,7 +3,11 @@ import Drawer from "@mui/material/Drawer";
 import Box from "@mui/material/Box";
 import { Divider, Grid, IconButton, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { KubernetesObjectWithSpecAndStatus, WorkflowParent, Workflow } from "@koreo/koreo-ts";
+import {
+  KubernetesObjectWithSpecAndStatus,
+  WorkflowParent,
+  Workflow,
+} from "@koreo/koreo-ts";
 import theme from "@/app/theme";
 import { useState } from "react";
 import { timeAgoReadyCondition } from "@/lib/k8s/utils";

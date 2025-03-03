@@ -29,7 +29,11 @@ import Tooltip from "@mui/material/Tooltip";
 import RouteOutlinedIcon from "@mui/icons-material/RouteOutlined";
 import StyledLink from "@/components/StyledLink";
 import "./globals.css";
-import { Workflow, WorkflowParent, KubernetesObjectWithSpecAndStatus } from "@koreo/koreo-ts";
+import {
+  Workflow,
+  WorkflowParent,
+  KubernetesObjectWithSpecAndStatus,
+} from "@koreo/koreo-ts";
 import CodeRoundedIcon from "@mui/icons-material/CodeRounded";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { a11yDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";

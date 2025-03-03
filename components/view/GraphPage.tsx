@@ -36,8 +36,9 @@ const GraphPage: React.FC<React.PropsWithChildren<GraphPageProps>> = ({
   icon,
   children,
 }) => {
-  const [selectedNode, setSelectedNode] =
-    useState<NodeProps<KoreoNode> | null>(null);
+  const [selectedNode, setSelectedNode] = useState<NodeProps<KoreoNode> | null>(
+    null,
+  );
   const [openNodeSidebar, setOpenNodeSidebar] = useState(false);
   const [view, setView] = useState<"graph" | "list">("list");
   const [loadedViewSetting, setLoadedViewSetting] = useState<boolean>(false);

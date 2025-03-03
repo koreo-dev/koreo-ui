@@ -9,7 +9,7 @@ import {
 export const dynamic = "force-dynamic"; // defaults to auto
 export async function GET(
   request: NextRequest,
-  { params }: { params: { namespace: string } }
+  { params }: { params: { namespace: string } },
 ) {
   let workflows: Workflow[];
 
@@ -34,7 +34,7 @@ export async function GET(
         workflow,
         instances: instances.length,
       };
-    })
+    }),
   );
 
   return Response.json(workflowsWithInstances);

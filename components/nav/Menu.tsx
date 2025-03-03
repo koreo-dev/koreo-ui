@@ -35,18 +35,20 @@ const StyledMenuItem = styled(Box)(({ theme }) => ({
   cursor: "pointer",
   "&:hover": {
     backgroundColor: alpha(theme.palette.primary.main, 0.1),
-    color: theme.palette.mode === "light" ? theme.palette.secondary.main : "white",
+    color:
+      theme.palette.mode === "light" ? theme.palette.secondary.main : "white",
   },
   "&.selected": {
-    backgroundColor: theme.palette.mode === "light" 
-      ? theme.palette.primary.main 
-      : theme.palette.primary.dark,
+    backgroundColor:
+      theme.palette.mode === "light"
+        ? theme.palette.primary.main
+        : theme.palette.primary.dark,
     color: theme.palette.primary.contrastText,
   },
   "&.disabled": {
     opacity: 0.5,
     pointerEvents: "none",
-  }
+  },
 }));
 
 const getIconForItemType = (itemType: string) => {
@@ -71,27 +73,40 @@ export default function MenuTree() {
   };
 
   const isSelected = (itemId: string): boolean => {
-    if (itemId === "/" && (pathName === "/" || pathName.startsWith("/workflow/"))) {
+    if (
+      itemId === "/" &&
+      (pathName === "/" || pathName.startsWith("/workflow/"))
+    ) {
       return true;
     }
-    if (itemId === "/resource-template" && pathName.startsWith("/resource-template/")) {
+    if (
+      itemId === "/resource-template" &&
+      pathName.startsWith("/resource-template/")
+    ) {
       return true;
     }
     return pathName === itemId;
   };
 
   return (
-    <List sx={{ width: '100%', height: 'fit-content', flexGrow: 1, overflowY: 'auto' }}>
+    <List
+      sx={{
+        width: "100%",
+        height: "fit-content",
+        flexGrow: 1,
+        overflowY: "auto",
+      }}
+    >
       {menuItems.map((item) => {
         const Icon = getIconForItemType(item.type);
         const selected = isSelected(item.id);
-        
+
         return (
           <ListItem key={item.id} disablePadding>
-            <StyledMenuItem 
+            <StyledMenuItem
               onClick={() => handleClick(item.id, item.disabled)}
-              className={`${selected ? 'selected' : ''} ${item.disabled ? 'disabled' : ''}`}
-              sx={{ width: '100%' }}
+              className={`${selected ? "selected" : ""} ${item.disabled ? "disabled" : ""}`}
+              sx={{ width: "100%" }}
             >
               <Typography variant="body2" sx={{ flex: 1 }}>
                 {item.label}

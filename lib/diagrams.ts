@@ -43,7 +43,7 @@ export const createNode = (
   name: string,
   status: NodeStatus,
   krm?: KubernetesObjectWithSpecAndStatus,
-  options?: NodeOptions
+  options?: NodeOptions,
 ): Node => {
   return {
     id: id,
@@ -67,7 +67,7 @@ export const createNode = (
 export const createEdge = (
   sourceId: string,
   targetId: string,
-  dashed?: boolean
+  dashed?: boolean,
 ): Edge => {
   return {
     id: `${sourceId}:${targetId}`,

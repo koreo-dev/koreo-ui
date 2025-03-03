@@ -7,7 +7,7 @@ import {
 export const dynamic = "force-dynamic"; // defaults to auto
 export async function GET(
   request: NextRequest,
-  { params }: { params: { namespace: string; workflowId: string } }
+  { params }: { params: { namespace: string; workflowId: string } },
 ) {
   const url = new URL(request.url);
   const instanceId = url.searchParams.get("instance");
@@ -21,12 +21,12 @@ export async function GET(
         params.namespace,
         params.workflowId,
         instanceId,
-        expanded
-      )
+        expanded,
+      ),
     );
   }
 
   return Response.json(
-    await getKoreoWorkflowGraph(params.namespace, params.workflowId, expanded)
+    await getKoreoWorkflowGraph(params.namespace, params.workflowId, expanded),
   );
 }

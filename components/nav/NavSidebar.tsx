@@ -64,7 +64,9 @@ export default function NavSidebar() {
         }}
       >
         <Typography variant="caption">
-          <StyledLink target="_blank" href="https://koreo.dev/docs/overview">Documentation</StyledLink>
+          <StyledLink target="_blank" href="https://koreo.dev/docs/overview">
+            Documentation
+          </StyledLink>
         </Typography>
       </Box>
     </Drawer>

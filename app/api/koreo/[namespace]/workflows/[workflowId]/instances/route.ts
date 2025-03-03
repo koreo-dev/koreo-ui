@@ -9,13 +9,13 @@ import {
 export const dynamic = "force-dynamic"; // defaults to auto
 export async function GET(
   _: NextRequest,
-  { params }: { params: { namespace: string; workflowId: string } }
+  { params }: { params: { namespace: string; workflowId: string } },
 ) {
   const workflow = await getWorkflow(params.workflowId, params.namespace);
   if (!workflow) {
     return NextResponse.json(
       { code: "404", message: "Workflow not found" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -27,7 +27,7 @@ export async function GET(
         instance,
         managedResources: countManagedResources(managedResources),
       };
-    })
+    }),
   );
 
   return Response.json(instancesWithManagedResources);
