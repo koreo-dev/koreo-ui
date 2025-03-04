@@ -7,7 +7,7 @@ import theme from "@/app/theme";
 import { StrictMode } from "react";
 
 export const metadata: Metadata = {
-  title: "Konfigurate",
+  title: "Koreo",
 };
 
 export default function RootLayout(props: { children: React.ReactNode }) {
