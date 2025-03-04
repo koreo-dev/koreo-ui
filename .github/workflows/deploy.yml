@@ -6,8 +6,7 @@ on:
       - main
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  IMAGE: us-central1-docker.pkg.dev/${{ PROJECT_ID }}/koreo/koreo-ui
+  IMAGE: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/koreo/koreo-ui
 
 jobs:
   deploy:
@@ -26,7 +25,7 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: ${{ PROJECT_ID }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Configure Docker to use Artifact Registry
         run: gcloud auth configure-docker us-central1-docker.pkg.dev
