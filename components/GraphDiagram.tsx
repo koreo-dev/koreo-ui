@@ -16,7 +16,7 @@ import "@xyflow/react/dist/style.css";
 import "@xyflow/react/dist/base.css";
 import useSWR from "swr";
 import SkeletonFlow from "@/components/SkeletonFlow";
-import { KonfigNode } from "@/components/CustomNode";
+import { KoreoNode } from "@/components/CustomNode";
 
 const MINI_MAP_NODE_THRESHOLD = 10;
 
@@ -24,7 +24,7 @@ type GraphDiagramProps = {
   graphEndpoint: string;
   stateKey: string;
   onNodeSidebar: (open: boolean) => void;
-  onSetSelectedNode: (node: NodeProps<KonfigNode> | null) => void;
+  onSetSelectedNode: (node: NodeProps<KoreoNode> | null) => void;
   documentTitle: string;
 };
 

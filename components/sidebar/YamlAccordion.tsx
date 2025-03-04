@@ -10,7 +10,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { a11yDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 import yaml from "js-yaml";
-import { KubernetesObjectWithSpecAndStatus } from "@/lib/k8s/types";
+import { KubernetesObjectWithSpecAndStatus } from "@koreo/koreo-ts";
 
 interface YamlAccordionProps {
   resource: KubernetesObjectWithSpecAndStatus;

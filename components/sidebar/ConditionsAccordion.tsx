@@ -18,7 +18,7 @@ import NotInterestedOutlinedIcon from "@mui/icons-material/NotInterestedOutlined
 import HourglassBottomOutlinedIcon from "@mui/icons-material/HourglassBottomOutlined";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import { timeAgo } from "@/lib/k8s/utils";
-import { KubernetesObjectWithSpecAndStatus, Condition } from "@/lib/k8s/types";
+import { KubernetesObjectWithSpecAndStatus, KubernetesCondition } from "@koreo/koreo-ts";
 
 interface ConditionsAccordionProps {
   resource: KubernetesObjectWithSpecAndStatus;
@@ -28,7 +28,7 @@ interface ConditionsAccordionProps {
   ) => (event: React.SyntheticEvent, expanded: boolean) => void;
 }
 
-const getConditionIcon = (condition: Condition): JSX.Element => {
+const getConditionIcon = (condition: KubernetesCondition): JSX.Element => {
   if (condition.status !== "True") {
     return <ErrorOutlineOutlinedIcon color="error" />;
   }
