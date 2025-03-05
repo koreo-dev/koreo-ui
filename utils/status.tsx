@@ -53,7 +53,7 @@ export const getResourceStatus = (
   resource: WorkflowParent,
   fontSize?: number | string,
 ): JSX.Element => {
-  const status = parseCrdForStatus([resource]);
+  const status = parseCrdForStatus(resource);
   let message = "";
   (resource?.status?.conditions || []).forEach((condition) => {
     if (condition.type === "Ready") {
