@@ -6,57 +6,57 @@ import {
 import { NodeStatus } from "@/lib/diagrams";
 
 export const parseCrdForStatus = (
-  crds: (KubernetesObjectWithSpecAndStatus | null | undefined)[],
+  crd: KubernetesObjectWithSpecAndStatus | null | undefined,
 ): NodeStatus => {
-  let aggregatedStatus: NodeStatus = NodeStatus.healthy;
-
-  for (const crd of crds) {
-    if (!crd || !crd.status) {
-      continue;
-    }
-
-    if (
-      crd.status?.terminalCondition?.state === "CONDITION_FAILED" ||
-      !crd.status.conditions
-    ) {
-      return NodeStatus.error;
-    }
-
-    for (const condition of crd.status.conditions) {
-      if (condition.type === "Ready") {
-        if (condition.status === "False") {
-          if (
-            condition.reason === "Updating" ||
-            condition.reason === "RetryWait"
-          ) {
-            aggregatedStatus = NodeStatus.inProgress;
-          } else {
-            return NodeStatus.error;
-          }
-        } else {
-          if (
-            condition.reason === "Waiting" ||
-            condition.reason === "Wait" ||
-            condition.reason === "DepSkip"
-          ) {
-            aggregatedStatus = NodeStatus.inProgress;
-          } else if (
-            condition.reason !== "UpToDate" &&
-            condition.reason !== "Ready"
-          ) {
-            return NodeStatus.error;
-          }
-        }
-      } else if (condition.type === "ACK.ResourceSynced") {
-        // AWS ACK
-        if (condition.status === "True") {
-          aggregatedStatus = NodeStatus.healthy;
-        }
-      }
-    }
+  let retStatus: NodeStatus = NodeStatus.healthy;
+  if (!crd || !crd.status) {
+    return retStatus;
+  }
+  if (
+    crd.status?.terminalCondition?.state == "CONDITION_FAILED" ||
+    !crd.status.conditions
+  ) {
+    return NodeStatus.error;
   }
 
-  return aggregatedStatus;
+  crd.status.conditions.forEach((condition) => {
+    if (condition.type === "Ready") {
+      if (condition.status === "False") {
+        if (
+          condition.reason === "Updating" ||
+          condition.reason === "RetryWait"
+        ) {
+          retStatus = NodeStatus.inProgress;
+          return;
+        }
+        retStatus = NodeStatus.error;
+        return;
+      } else {
+        if (
+          condition.reason === "Waiting" ||
+          condition.reason === "Wait" ||
+          condition.reason === "DepSkip"
+        ) {
+          retStatus = NodeStatus.inProgress;
+        } else if (
+          condition.reason === "UpToDate" ||
+          condition.reason === "Ready"
+        ) {
+          retStatus = NodeStatus.healthy;
+        } else {
+          retStatus = NodeStatus.error;
+        }
+        return;
+      }
+    } else if (condition.type === "ACK.ResourceSynced") {
+      // AWS ACK
+      if (condition.status === "True") {
+        retStatus = NodeStatus.healthy;
+        return;
+      }
+    }
+  });
+  return retStatus;
 };
 
 export const timeAgoReadyCondition = (

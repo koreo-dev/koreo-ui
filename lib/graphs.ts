@@ -69,7 +69,7 @@ const convertGraph = (
         workflowNode.metadata?.label
           ? (workflowNode.metadata.label as string)
           : workflowNode.krm.metadata?.name!,
-        parseCrdForStatus([workflowNode.krm]),
+        NodeStatus.none,
         workflowNode.krm,
         {
           overrideDisplayText: "Sub-Workflow",
@@ -95,7 +95,7 @@ const convertGraph = (
       const node = createNode(
         knode.id,
         knode.metadata?.label ? (knode.metadata.label as string) : "RefSwitch",
-        parseCrdForStatus(caseKRMs),
+        NodeStatus.none,
         undefined,
         { overrideDisplayText: "RefSwitch" },
       );
@@ -109,20 +109,30 @@ const convertGraph = (
         knode.metadata?.label
           ? (knode.metadata.label as string)
           : knode.krm.metadata?.name!,
-        parseCrdForStatus([knode.krm]),
+        NodeStatus.none,
         knode.krm,
       );
       graph.nodes[node.id] = node;
       if (includeResources) {
         addResourceNodes(graph, node.id, knode.managedResources);
       }
+    } else if (knode.type === "Parent") {
+      const node = createNode(
+        knode.id,
+        knode.metadata?.label
+          ? (knode.metadata.label as string)
+          : knode.krm.metadata?.name!,
+        parseCrdForStatus(knode.krm),
+        knode.krm,
+      );
+      graph.nodes[node.id] = node;
     } else {
       const node = createNode(
         knode.id,
         knode.metadata?.label
           ? (knode.metadata.label as string)
           : knode.krm.metadata?.name!,
-        parseCrdForStatus([knode.krm]),
+        NodeStatus.none,
         knode.krm,
       );
       graph.nodes[node.id] = node;
@@ -212,7 +222,7 @@ const convertGraphExpanded = (
           const node = createNode(
             caseNode.id,
             `case: ${caseStr}`,
-            parseCrdForStatus([caseNode.krm]),
+            NodeStatus.none,
             caseNode.krm,
           );
           graph.nodes[node.id] = node;
@@ -269,20 +279,30 @@ const convertGraphExpanded = (
         knode.metadata?.label
           ? (knode.metadata.label as string)
           : knode.krm.metadata?.name!,
-        parseCrdForStatus([knode.krm]),
+        NodeStatus.none,
         knode.krm,
       );
       graph.nodes[node.id] = node;
       if (includeResources) {
         addResourceNodes(graph, node.id, knode.managedResources);
       }
+    } else if (knode.type === "Parent") {
+      const node = createNode(
+        knode.id,
+        knode.metadata?.label
+          ? (knode.metadata.label as string)
+          : knode.krm.metadata?.name!,
+        parseCrdForStatus(knode.krm),
+        knode.krm,
+      );
+      graph.nodes[node.id] = node;
     } else {
       const node = createNode(
         knode.id,
         knode.metadata?.label
           ? (knode.metadata.label as string)
           : knode.krm.metadata?.name!,
-        parseCrdForStatus([knode.krm]),
+        NodeStatus.none,
         knode.krm,
       );
       graph.nodes[node.id] = node;
@@ -319,7 +339,7 @@ const addResourceNodes = (
     const resourceNode = createNode(
       resource.metadata!.uid || uuidv4(),
       resource.metadata!.name!,
-      parseCrdForStatus([resource]),
+      parseCrdForStatus(resource),
       resource,
       {
         noBackground: managedResource.readonly,

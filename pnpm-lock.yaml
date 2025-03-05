@@ -17,8 +17,8 @@ importers:
         specifier: 11.11.0
         version: 11.11.0(@emotion/react@11.11.3(@types/react@18.2.55)(react@18.2.0))(@types/react@18.2.55)(react@18.2.0)
       "@koreo/koreo-ts":
-        specifier: ^0.0.1
-        version: 0.0.1
+        specifier: ^0.0.3
+        version: 0.0.3
       "@kubernetes/client-node":
         specifier: 0.20.0
         version: 0.20.0
@@ -733,10 +733,10 @@ packages:
     peerDependencies:
       jsep: ^0.4.0||^1.0.0
 
-  "@koreo/koreo-ts@0.0.1":
+  "@koreo/koreo-ts@0.0.3":
     resolution:
       {
-        integrity: sha512-zhXPjJNqvPbmE2dz4QxwbqyOwNS25nwejma2qC2YQELsE8LxG+tVG4KfqsDaQ+QaCxT/UwuWMfZ17ddgeDP/pw==,
+        integrity: sha512-288dSV1CgYG0Gk4TSaakgGRhV4LZ4UVdyYLXH8OBYQ9zZmTcjRv/ai91dIFh2lqCnfzz8wC+EYPnTxdwERftOA==,
       }
 
   "@kubernetes/client-node@0.20.0":
@@ -5365,7 +5365,7 @@ snapshots:
     dependencies:
       jsep: 1.4.0
 
-  "@koreo/koreo-ts@0.0.1":
+  "@koreo/koreo-ts@0.0.3":
     dependencies:
       "@kubernetes/client-node": 1.0.0
       "@types/uuid": 9.0.8

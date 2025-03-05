@@ -18,7 +18,10 @@ import NotInterestedOutlinedIcon from "@mui/icons-material/NotInterestedOutlined
 import HourglassBottomOutlinedIcon from "@mui/icons-material/HourglassBottomOutlined";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import { timeAgo } from "@/lib/k8s/utils";
-import { KubernetesObjectWithSpecAndStatus, KubernetesCondition } from "@koreo/koreo-ts";
+import {
+  KubernetesObjectWithSpecAndStatus,
+  KubernetesCondition,
+} from "@koreo/koreo-ts";
 
 interface ConditionsAccordionProps {
   resource: KubernetesObjectWithSpecAndStatus;
