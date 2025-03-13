@@ -103,7 +103,7 @@ export default function Page({
   const breadcrumbs = [
     {
       name: "Workflows",
-      href: "/workflow",
+      href: "/",
     },
     {
       name: params.namespace,
