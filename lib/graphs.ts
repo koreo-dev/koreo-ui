@@ -14,12 +14,12 @@ import { Node, Edge } from "@xyflow/react";
 export const getKoreoWorkflowGraph = async (
   namespace: string,
   workflowId: string,
-  expanded?: boolean
+  expanded?: boolean,
 ): Promise<Graph> => {
   return koreoGraphToUIGraph(
     await getWorkflowGraph(namespace, workflowId),
     false,
-    expanded
+    expanded,
   );
 };
 
@@ -27,19 +27,19 @@ export const getKoreoWorkflowInstanceGraph = async (
   namespace: string,
   workflowId: string,
   instanceId: string,
-  expanded?: boolean
+  expanded?: boolean,
 ): Promise<Graph> => {
   return koreoGraphToUIGraph(
     await getWorkflowGraph(namespace, workflowId, instanceId),
     true,
-    expanded
+    expanded,
   );
 };
 
 const koreoGraphToUIGraph = (
   koreoGraph: KoreoGraph,
   includeResources: boolean,
-  expanded?: boolean
+  expanded?: boolean,
 ): Graph => {
   const dedupedGraph = expanded
     ? convertGraphExpanded(koreoGraph, includeResources)
@@ -52,7 +52,7 @@ const koreoGraphToUIGraph = (
 
 const convertGraph = (
   koreoGraph: KoreoGraph,
-  includeResources: boolean
+  includeResources: boolean,
 ): { nodes: Record<string, Node>; edges: Record<string, Edge> } => {
   const graph: { nodes: Record<string, Node>; edges: Record<string, Edge> } = {
     nodes: {},
@@ -73,7 +73,7 @@ const convertGraph = (
         workflowNode.krm,
         {
           overrideDisplayText: "Sub-Workflow",
-        }
+        },
       );
       graph.nodes[node.id] = node;
       if (includeResources) {
@@ -97,7 +97,7 @@ const convertGraph = (
         knode.metadata?.label ? (knode.metadata.label as string) : "RefSwitch",
         NodeStatus.none,
         undefined,
-        { overrideDisplayText: "RefSwitch" }
+        { overrideDisplayText: "RefSwitch" },
       );
       graph.nodes[node.id] = node;
       if (includeResources) {
@@ -110,7 +110,7 @@ const convertGraph = (
           ? (knode.metadata.label as string)
           : knode.krm.metadata?.name!,
         NodeStatus.none,
-        knode.krm
+        knode.krm,
       );
       graph.nodes[node.id] = node;
       if (includeResources) {
@@ -125,11 +125,11 @@ const convertGraph = (
           ? (knode.metadata.label as string)
           : knode.krm.metadata?.name!,
         parseCrdForStatus(knode.krm),
-        knode.krm
+        knode.krm,
       );
       graph.nodes[node.id] = node;
       const parentEdge = koreoGraph.edges.find(
-        (edge) => edge.source === knode.id
+        (edge) => edge.source === knode.id,
       );
       if (parentEdge) {
         parentEdge.source = parentNodeId;
@@ -141,7 +141,7 @@ const convertGraph = (
           ? (knode.metadata.label as string)
           : knode.krm.metadata?.name!,
         NodeStatus.none,
-        knode.krm
+        knode.krm,
       );
       graph.nodes[node.id] = node;
     }
@@ -150,7 +150,7 @@ const convertGraph = (
     const edge = createEdge(
       kedge.source,
       kedge.target,
-      kedge.type === "ParentToWorkflow"
+      kedge.type === "ParentToWorkflow",
     );
     graph.edges[edge.id] = edge;
   });
@@ -160,7 +160,7 @@ const convertGraph = (
 
 const convertGraphExpanded = (
   koreoGraph: KoreoGraph,
-  includeResources: boolean
+  includeResources: boolean,
 ): { nodes: Record<string, Node>; edges: Record<string, Edge> } => {
   const graph: { nodes: Record<string, Node>; edges: Record<string, Edge> } = {
     nodes: {},
@@ -183,10 +183,10 @@ const convertGraphExpanded = (
         }
       });
       Object.values(subGraph.nodes).forEach(
-        (node) => (graph.nodes[node.id] = node)
+        (node) => (graph.nodes[node.id] = node),
       );
       Object.values(subGraph.edges).forEach(
-        (edge) => (graph.edges[edge.id] = edge)
+        (edge) => (graph.edges[edge.id] = edge),
       );
     } else if (knode.type === "RefSwitch") {
       const switchInName = knode.metadata?.label
@@ -200,7 +200,7 @@ const convertGraphExpanded = (
         undefined,
         {
           overrideDisplayText: "RefSwitch",
-        }
+        },
       );
       graph.nodes[switchInNode.id] = switchInNode;
       const functionCaseNodes: string[] = [];
@@ -217,10 +217,10 @@ const convertGraphExpanded = (
           caseNode.workflowGraph.nodes[0].metadata.label = `case: ${caseStr}`;
           const subGraph = convertGraphExpanded(caseNode.workflowGraph, false);
           Object.values(subGraph.nodes).forEach(
-            (node) => (graph.nodes[node.id] = node)
+            (node) => (graph.nodes[node.id] = node),
           );
           Object.values(subGraph.edges).forEach(
-            (edge) => (graph.edges[edge.id] = edge)
+            (edge) => (graph.edges[edge.id] = edge),
           );
           workflowCaseNodes.push({
             workflowNode: caseNode.workflowGraph.nodes[0].id,
@@ -231,7 +231,7 @@ const convertGraphExpanded = (
             caseNode.id,
             `case: ${caseStr}`,
             NodeStatus.none,
-            caseNode.krm
+            caseNode.krm,
           );
           graph.nodes[node.id] = node;
           functionCaseNodes.push(node.id);
@@ -249,7 +249,7 @@ const convertGraphExpanded = (
         undefined,
         {
           overrideDisplayText: "RefSwitch Result",
-        }
+        },
       );
       graph.nodes[switchOutNode.id] = switchOutNode;
       if (includeResources) {
@@ -288,7 +288,7 @@ const convertGraphExpanded = (
           ? (knode.metadata.label as string)
           : knode.krm.metadata?.name!,
         NodeStatus.none,
-        knode.krm
+        knode.krm,
       );
       graph.nodes[node.id] = node;
       if (includeResources) {
@@ -303,11 +303,11 @@ const convertGraphExpanded = (
           ? (knode.metadata.label as string)
           : knode.krm.metadata?.name!,
         parseCrdForStatus(knode.krm),
-        knode.krm
+        knode.krm,
       );
       graph.nodes[node.id] = node;
       const parentEdge = koreoGraph.edges.find(
-        (edge) => edge.source === knode.id
+        (edge) => edge.source === knode.id,
       );
       if (parentEdge) {
         parentEdge.source = parentNodeId;
@@ -319,7 +319,7 @@ const convertGraphExpanded = (
           ? (knode.metadata.label as string)
           : knode.krm.metadata?.name!,
         NodeStatus.none,
-        knode.krm
+        knode.krm,
       );
       graph.nodes[node.id] = node;
     }
@@ -336,7 +336,7 @@ const convertGraphExpanded = (
       const edge = createEdge(
         kedge.source,
         kedge.target,
-        kedge.type === "ParentToWorkflow"
+        kedge.type === "ParentToWorkflow",
       );
       graph.edges[edge.id] = edge;
     }
@@ -348,7 +348,7 @@ const convertGraphExpanded = (
 const addResourceNodes = (
   graph: { nodes: Record<string, Node>; edges: Record<string, Edge> },
   parentNodeId: string,
-  managedResources: ManagedKubernetesResource[] | undefined
+  managedResources: ManagedKubernetesResource[] | undefined,
 ) => {
   (managedResources || []).forEach((managedResource) => {
     const resource = managedResource.resource;
@@ -359,7 +359,7 @@ const addResourceNodes = (
       resource,
       {
         noBackground: managedResource.readonly,
-      }
+      },
     );
     graph.nodes[resourceNode.id] = resourceNode;
     const edge = createEdge(parentNodeId, resourceNode.id, true);
