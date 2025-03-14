@@ -136,14 +136,14 @@ export default function Page() {
           );
         case "name":
           return workflow.metadata?.name?.toLowerCase().includes(value);
-        case "crdapigroup":
+        case "parentapigroup":
           return workflow.spec.crdRef?.apiGroup.toLowerCase().includes(value);
-        case "crdkind":
+        case "parentkind":
           return workflow.spec.crdRef?.kind.toLowerCase().includes(value);
-        case "crdversion":
+        case "parentversion":
           return workflow.spec.crdRef?.version.toLowerCase().includes(value);
         case "steps":
-          return getWorkflowStepsCount(workflow).toString() == value;
+          return workflow.spec.steps.length.toString() == value;
         case "instances":
           return workflowWithInstances.instances.toString() == value;
         default:
@@ -277,9 +277,9 @@ export default function Page() {
                 setActiveFilters={setActiveFilters}
                 validFields={[
                   "name",
-                  "crdApiGroup",
-                  "crdKind",
-                  "crdVersion",
+                  "parentApiGroup",
+                  "parentKind",
+                  "parentVersion",
                   "steps",
                   "instances",
                 ]}
@@ -297,21 +297,21 @@ export default function Page() {
                       </TableCell>
                       <TableCell
                         sx={{ cursor: "pointer" }}
-                        onClick={() => handleHeaderClick("crdApiGroup")}
+                        onClick={() => handleHeaderClick("parentApiGroup")}
                       >
-                        CRD API Group
+                        Parent API Group
                       </TableCell>
                       <TableCell
                         sx={{ cursor: "pointer" }}
-                        onClick={() => handleHeaderClick("crdKind")}
+                        onClick={() => handleHeaderClick("parentKind")}
                       >
-                        CRD Kind
+                        Parent Kind
                       </TableCell>
                       <TableCell
                         sx={{ cursor: "pointer" }}
-                        onClick={() => handleHeaderClick("crdVersion")}
+                        onClick={() => handleHeaderClick("parentVersion")}
                       >
-                        CRD Version
+                        Parent Version
                       </TableCell>
                       <TableCell
                         sx={{ cursor: "pointer" }}
@@ -379,9 +379,7 @@ export default function Page() {
                                 ?.version || "n/a"}
                             </TableCell>
                             <TableCell>
-                              {getWorkflowStepsCount(
-                                workflowWithInstances.workflow,
-                              )}
+                              {workflowWithInstances.workflow.spec.steps.length}
                             </TableCell>
                             <TableCell>
                               {workflowWithInstances.workflow.spec.crdRef
@@ -578,10 +576,4 @@ const getInstanceLink = (
       {instance.metadata.name}
     </Box>
   );
-};
-
-const getWorkflowStepsCount = (workflow: Workflow): number => {
-  return workflow.spec.configStep
-    ? 1 + workflow.spec.steps.length
-    : workflow.spec.steps.length;
 };
