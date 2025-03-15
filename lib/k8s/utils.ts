@@ -9,13 +9,10 @@ export const parseCrdForStatus = (
   crd: KubernetesObjectWithSpecAndStatus | null | undefined,
 ): NodeStatus => {
   let retStatus: NodeStatus = NodeStatus.healthy;
-  if (!crd || !crd.status) {
+  if (!crd || !crd.status || !crd.status.conditions) {
     return retStatus;
   }
-  if (
-    crd.status?.terminalCondition?.state == "CONDITION_FAILED" ||
-    !crd.status.conditions
-  ) {
+  if (crd.status?.terminalCondition?.state == "CONDITION_FAILED") {
     return NodeStatus.error;
   }
 
