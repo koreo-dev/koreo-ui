@@ -1,86 +1,68 @@
-## Getting Started
+# Koreo UI
+
+Koreo UI is a lightweight, read-only application that provides a visual
+representation of your Koreo Workflows and related resources.
+
+## Installing
+
+Refer to the [Koreo documentation](https://koreo.dev/docs/koreo-ui) for steps
+on installing Koreo UI.
+
+## Getting Started for Development
 
 ### Install pnpm
 
-Version 10.2.0 or higher should be used
+Version 10.2.0 or higher should be used.
 
-## Volta installations
-
-- Set the environment variable in your profile script (e.g. .bash_profile, .zshrc, or similar).
-
-```sh
-export VOLTA_FEATURE_PNPM=1
-```
-
-Running the following command will install and set as the default
-
-```sh
-volta install pnpm@8.15.3
-```
-
-### Setup your environment:
-
-This step only needs done once to setup your environment.
-
-- Install dependencies into node_modules
+### Install Dependencies
 
 ```sh
 pnpm install
 ```
 
-### Set environment variables:
+### Authenticate with Kubernetes
 
-```sh
-export GITLAB_TOKEN=<your token value>
-```
+Locally, Koreo UI leverages kubeconfig credentials at ~/.kube/config to
+authenticate with a Kubernetes cluster. Ensure that you have authenticated
+properly, either with `kubectl` or, if using a cloud-managed Kubernetes such as
+GKE, with the respective tooling such as `gcloud`.
 
-### Connect to GCP
+Refer to the [Kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/)
+for more.
 
-First log in
+### Start the Dev Environment
 
-```sh
-gcloud auth login
-```
-
-Then get the correct k8s configuration for local work
-
-```sh
-gcloud container clusters get-credentials konfig-control-plane --location us-central1 --project your-project-id
-```
-
-### Start your dev environment:
-
-This step can be done before development and will auto reload changes made to the app.
+To run the application in development mode:
 
 ```sh
 pnpm dev
 ```
 
-### Build the standalone app:
+### Build
 
-This step is useful for debugging compile time issues in the docker build. While the editor syntax
-engines run great, this is what the docker build uses.
+To build the application:
 
 ```sh
 pnpm build
 ```
 
-**If you run into errors during the build**
-You can delete your kube config located at $HOME/.kube/config and recreate it using
+To build the Docker image:
 
 ```sh
-gcloud container clusters get-credentials konfig-control-plane --location us-central1 --project your-project-id
+docker build -t koreo-ui .
 ```
 
-### Start the standalone app:
+### Start the Production Environment
 
-This step can run the compiled application.
+To run the built application:
 
 ```sh
 pnpm start
 ```
 
-### Clean files before committing:
+### Clean Files Before Committing
+
+Ensure `pnpm clean` is run on any code that is committed:
 
 ```sh
 pnpm clean
