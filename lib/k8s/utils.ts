@@ -49,7 +49,8 @@ export const parseCrdForStatus = (
       // AWS ACK
       if (condition.status === "True") {
         retStatus = NodeStatus.healthy;
-        return;
+      } else {
+        retStatus = NodeStatus.error;
       }
     }
   });
