@@ -148,9 +148,9 @@ export default function Page({
       stateKey={stateKey}
       breadcrumbs={breadcrumbs}
     >
-      {instances.length > 0 && (
-        <Panel key={"instance"} position={"top-left"}>
-          <Box display="flex" alignItems="center" gap={2}>
+      <Panel key={"instance"} position={"top-left"}>
+        <Box display="flex" alignItems="center" gap={2}>
+          {instances.length > 0 && (
             <FormControl sx={{ m: 1, minWidth: 240 }} size="small">
               <InputLabel id="instance-selector-label">Instance</InputLabel>
               <Select
@@ -187,25 +187,25 @@ export default function Page({
                 </IconButton>
               )}
             </FormControl>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={expanded}
-                  onChange={(e) => setExpanded(e.target.checked)}
-                />
-              }
-              label={
-                <Box display="flex" alignItems="center" gap={1}>
-                  Expanded
-                  <Tooltip title="Expand nested nodes like RefSwitches and Sub-Workflows into their constituent nodes">
-                    <HelpOutlineIcon fontSize="small" />
-                  </Tooltip>
-                </Box>
-              }
-            />
-          </Box>
-        </Panel>
-      )}
+          )}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={expanded}
+                onChange={(e) => setExpanded(e.target.checked)}
+              />
+            }
+            label={
+              <Box display="flex" alignItems="center" gap={1}>
+                Expanded
+                <Tooltip title="Expand nested nodes like RefSwitches and Sub-Workflows into their constituent nodes">
+                  <HelpOutlineIcon fontSize="small" />
+                </Tooltip>
+              </Box>
+            }
+          />
+        </Box>
+      </Panel>
     </GraphPage>
   );
 }
