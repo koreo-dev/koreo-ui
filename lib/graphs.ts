@@ -17,24 +17,28 @@ export const getKoreoWorkflowGraph = async (
     expanded,
   );
   return {
-    nodes: inflatedGraph.nodes.map((node) => {
-      return createNode(
-        node.id,
-        node.label,
-        node.krm ? parseCrdForStatus(node.krm) : NodeStatus.none,
-        node.krm,
-        {
-          overrideDisplayText: node.type,
-          noBackground: node.metadata
-            ? (node.metadata.managedResource as boolean) &&
-              (node.metadata.readonly as boolean)
-            : false,
-        },
-      );
-    }),
-    edges: inflatedGraph.edges.map((edge) => {
-      return createEdge(edge.source, edge.target);
-    }),
+    nodes: inflatedGraph.nodes
+      .map((node) => {
+        return createNode(
+          node.id,
+          node.label,
+          node.krm ? parseCrdForStatus(node.krm) : NodeStatus.none,
+          node.krm,
+          {
+            overrideDisplayText: node.type,
+            noBackground: node.metadata
+              ? (node.metadata.managedResource as boolean) &&
+                (node.metadata.readonly as boolean)
+              : false,
+          },
+        );
+      })
+      .sort((a, b) => a.id.localeCompare(b.id)),
+    edges: inflatedGraph.edges
+      .map((edge) => {
+        return createEdge(edge.source, edge.target);
+      })
+      .sort((a, b) => a.id.localeCompare(b.id)),
   };
 };
 
@@ -51,27 +55,31 @@ export const getKoreoWorkflowInstanceGraph = async (
     expanded,
   );
   return {
-    nodes: inflatedGraph.nodes.map((node) => {
-      return createNode(
-        node.id,
-        node.label,
-        node.krm ? parseCrdForStatus(node.krm) : NodeStatus.none,
-        node.krm,
-        {
-          overrideDisplayText: node.type,
-          noBackground: node.metadata
-            ? (node.metadata.managedResource as boolean) &&
-              (node.metadata.readonly as boolean)
-            : false,
-        },
-      );
-    }),
-    edges: inflatedGraph.edges.map((edge) => {
-      return createEdge(
-        edge.source,
-        edge.target,
-        edge.type === "StepToResource" || edge.type === "ParentToWorkflow",
-      );
-    }),
+    nodes: inflatedGraph.nodes
+      .map((node) => {
+        return createNode(
+          node.id,
+          node.label,
+          node.krm ? parseCrdForStatus(node.krm) : NodeStatus.none,
+          node.krm,
+          {
+            overrideDisplayText: node.type,
+            noBackground: node.metadata
+              ? (node.metadata.managedResource as boolean) &&
+                (node.metadata.readonly as boolean)
+              : false,
+          },
+        );
+      })
+      .sort((a, b) => a.id.localeCompare(b.id)),
+    edges: inflatedGraph.edges
+      .map((edge) => {
+        return createEdge(
+          edge.source,
+          edge.target,
+          edge.type === "StepToResource" || edge.type === "ParentToWorkflow",
+        );
+      })
+      .sort((a, b) => a.id.localeCompare(b.id)),
   };
 };
