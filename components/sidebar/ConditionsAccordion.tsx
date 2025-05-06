@@ -40,6 +40,10 @@ const getConditionIcon = (condition: KubernetesCondition): JSX.Element => {
     return <NotInterestedOutlinedIcon color="disabled" />;
   }
 
+  if (condition.status === "True" && condition.reason === "UpToDate") {
+    return <CheckCircleOutlineRoundedIcon color="success" />;
+  }
+
   if (
     condition.status === "True" &&
     (condition.type.startsWith("ACK.") || condition.reason === "Ready")
