@@ -1,11 +1,15 @@
 "use client";
 
-import { Box, Drawer, Divider, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Box, Drawer, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import Menu from "@/components/nav/Menu";
 import Link from "next/link";
 import Image from "next/image";
 import StyledLink from "@/components/StyledLink";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import IconButton from "@mui/material/IconButton";
 
 const SidebarHeader = styled(Box)(({ theme }) => ({
   paddingTop: theme.spacing(4),
@@ -18,16 +22,42 @@ const SidebarHeader = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
+const SIDEBAR_COLLAPSE_KEY = "koreo-sidebar-collapsed";
+
 export default function NavSidebar() {
-  const drawerWidth = 300;
+  const [isCollapsed, setIsCollapsed] = useState<boolean | null>(null);
+
+  // Load collapse state from sessionStorage on first render
+  useEffect(() => {
+    const stored = sessionStorage.getItem(SIDEBAR_COLLAPSE_KEY);
+    setIsCollapsed(stored === "true");
+  }, []);
+
+  // Update sessionStorage when collapse state changes
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => {
+      const newVal = !prev;
+      sessionStorage.setItem(SIDEBAR_COLLAPSE_KEY, newVal.toString());
+      return newVal;
+    });
+  };
+
+  const expandedWidth = 300;
+  const collapsedWidth = 64;
+
+  // Avoid rendering anything until we know the collapsed state
+  if (isCollapsed === null) return null;
+
   return (
     <Drawer
       sx={{
-        width: drawerWidth,
+        width: isCollapsed ? collapsedWidth : expandedWidth,
         flexShrink: 0,
         "& .MuiDrawer-paper": {
-          width: drawerWidth,
+          width: isCollapsed ? collapsedWidth : expandedWidth,
           boxSizing: "border-box",
+          overflowX: "hidden",
+          transition: "width 0.3s ease",
         },
       }}
       PaperProps={{
@@ -36,39 +66,82 @@ export default function NavSidebar() {
       variant="permanent"
       anchor="left"
     >
-      <SidebarHeader>
-        <Link href={"/"}>
-          <Image src="/koreo_logo.png" alt="Koreo" width={200} height={41} />
+      <SidebarHeader
+        sx={{
+          paddingY: isCollapsed ? 2 : 4,
+          position: "relative", // needed for absolute positioning when expanded
+          alignItems: "center",
+        }}
+      >
+        <Link href="/">
+          {isCollapsed ? (
+            <Image src="/koreo_icon.png" alt="Koreo" width={41} height={41} />
+          ) : (
+            <Image src="/koreo_logo.png" alt="Koreo" width={200} height={41} />
+          )}
         </Link>
       </SidebarHeader>
 
-      <Divider />
+      <Box
+        sx={{
+          position: "relative",
+          height: 32,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderTop: "1px solid #e0dfe5",
+          borderBottom: "1px solid #e0dfe5",
+          backgroundColor: "#F9F8FB",
+        }}
+      >
+        <IconButton
+          onClick={toggleSidebar}
+          size="small"
+          sx={{
+            padding: 0.5,
+            color: "#6C6781",
+            "&:hover": {
+              backgroundColor: "transparent",
+              color: "black",
+            },
+          }}
+        >
+          {isCollapsed ? (
+            <ChevronRightIcon fontSize="small" />
+          ) : (
+            <ChevronLeftIcon fontSize="small" />
+          )}
+        </IconButton>
+      </Box>
 
       <Box
         sx={{
           overflowY: "auto",
           height: "calc(100% - 120px)",
-          padding: 2,
+          padding: isCollapsed ? 1 : 2,
         }}
       >
-        <Box sx={{ minHeight: 352, minWidth: 250 }}>
-          <Menu />
+        <Box sx={{ minHeight: 352, minWidth: isCollapsed ? "auto" : 250 }}>
+          <Menu collapsed={isCollapsed} />
         </Box>
       </Box>
-      <Box
-        sx={{
-          padding: 2,
-          textAlign: "center",
-          fontSize: "0.9rem",
-          color: "#999",
-        }}
-      >
-        <Typography variant="caption">
-          <StyledLink target="_blank" href="https://koreo.dev/docs/overview">
-            Documentation
-          </StyledLink>
-        </Typography>
-      </Box>
+
+      {!isCollapsed && (
+        <Box
+          sx={{
+            padding: 2,
+            textAlign: "center",
+            fontSize: "0.9rem",
+            color: "#999",
+          }}
+        >
+          <Typography variant="caption">
+            <StyledLink target="_blank" href="https://koreo.dev/docs/overview">
+              Documentation
+            </StyledLink>
+          </Typography>
+        </Box>
+      )}
     </Drawer>
   );
 }
