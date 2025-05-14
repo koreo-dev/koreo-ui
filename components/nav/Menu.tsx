@@ -24,15 +24,13 @@ const menuItems = [
 
 const StyledMenuItem = styled(Box)(({ theme }) => ({
   display: "flex",
-  flexDirection: "row-reverse",
   alignItems: "center",
   borderRadius: theme.spacing(3),
-  marginBottom: theme.spacing(0.5),
-  marginTop: theme.spacing(0.5),
+  margin: `${theme.spacing(0.5)} 0`,
   padding: theme.spacing(1),
-  paddingRight: theme.spacing(1.5),
   color: "#4B426C",
   cursor: "pointer",
+  transition: "background-color 0.2s",
   "&:hover": {
     backgroundColor: alpha(theme.palette.primary.main, 0.1),
     color:
@@ -62,7 +60,11 @@ const getIconForItemType = (itemType: string) => {
   }
 };
 
-export default function MenuTree() {
+interface MenuProps {
+  collapsed: boolean;
+}
+
+export default function Menu({ collapsed }: MenuProps) {
   const router = useRouter();
   const pathName = usePathname();
 
@@ -92,7 +94,6 @@ export default function MenuTree() {
     <List
       sx={{
         width: "100%",
-        height: "fit-content",
         flexGrow: 1,
         overflowY: "auto",
       }}
@@ -102,22 +103,33 @@ export default function MenuTree() {
         const selected = isSelected(item.id);
 
         return (
-          <ListItem key={item.id} disablePadding>
+          <ListItem
+            key={item.id}
+            disablePadding
+            sx={{ justifyContent: collapsed ? "center" : "flex-start" }}
+          >
             <StyledMenuItem
               onClick={() => handleClick(item.id, item.disabled)}
               className={`${selected ? "selected" : ""} ${item.disabled ? "disabled" : ""}`}
-              sx={{ width: "100%" }}
+              sx={{
+                width: "100%",
+                justifyContent: collapsed ? "center" : "flex-start",
+              }}
             >
-              <Typography variant="body2" sx={{ flex: 1 }}>
-                {item.label}
-              </Typography>
               {Icon && (
                 <Box
                   component={Icon}
-                  className="labelIcon"
                   color="inherit"
-                  sx={{ mr: 1, fontSize: "1.2rem" }}
+                  sx={{
+                    fontSize: "1.4rem",
+                    mr: collapsed ? 0 : 1.5,
+                  }}
                 />
+              )}
+              {!collapsed && (
+                <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
+                  {item.label}
+                </Typography>
               )}
             </StyledMenuItem>
           </ListItem>
