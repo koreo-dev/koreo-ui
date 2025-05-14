@@ -24,6 +24,9 @@ import {
   DialogActions,
   Button,
   IconButton,
+  OutlinedInput,
+  Chip,
+  SelectChangeEvent,
 } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import RouteOutlinedIcon from "@mui/icons-material/RouteOutlined";
@@ -48,7 +51,7 @@ import BreadcrumbsPage from "@/components/view/BreadcrumbsPage";
 const fetcher = (...args: any[]) => fetch(...args).then((res) => res.json());
 
 export default function Page() {
-  const [selectedNamespace, setSelectedNamespace] = useState<string>("");
+  const [selectedNamespaces, setSelectedNamespaces] = useState<string[]>([]);
   const [workflows, setWorkflows] = useState<
     { workflow: Workflow; instances: number }[]
   >([]);
@@ -81,44 +84,67 @@ export default function Page() {
 
   useEffect(() => {
     if (namespaces && namespaces.length > 0) {
-      // Set the selected namespace from localStorage if there is one
-      const savedNamespace = localStorage.getItem("selectedNamespace");
-      if (savedNamespace !== null) {
-        setSelectedNamespace(savedNamespace);
+      // Set the selected namespaces from localStorage if there are any
+      const savedNamespaces = localStorage.getItem("selectedNamespaces");
+      if (savedNamespaces !== null) {
+        try {
+          const parsedNamespaces = JSON.parse(savedNamespaces);
+          setSelectedNamespaces(
+            Array.isArray(parsedNamespaces)
+              ? parsedNamespaces
+              : [parsedNamespaces],
+          );
+        } catch (e) {
+          // If there's an error parsing, just use the first namespace
+          setSelectedNamespaces([namespaces[0]]);
+        }
       } else {
         // Otherwise default to first namespace in the list
-        setSelectedNamespace(namespaces[0]);
+        setSelectedNamespaces([namespaces[0]]);
       }
     }
   }, [namespaces]);
 
   useEffect(() => {
     const fetchWorkflows = async () => {
+      if (!selectedNamespaces.length) {
+        // Clear workflows when no namespaces are selected
+        setWorkflows([]);
+        return;
+      }
+
       setLoadingWorkflows(true);
       try {
+        const queryParams = new URLSearchParams();
+        selectedNamespaces.forEach((namespace) => {
+          queryParams.append("namespace", namespace);
+        });
+
         const response = await fetch(
-          `/api/koreo/${selectedNamespace}/workflows`,
+          `/api/koreo/workflows?${queryParams.toString()}`,
         );
         if (!response.ok) throw new Error("Failed to fetch workflows");
         const data = await response.json();
         setWorkflows(data || []);
       } catch (error) {
         console.error(error);
+        setWorkflows([]);
       } finally {
         setLoadingWorkflows(false);
       }
     };
 
-    if (selectedNamespace) {
-      fetchWorkflows();
-    }
-  }, [selectedNamespace]);
+    fetchWorkflows();
+  }, [selectedNamespaces]);
 
   useEffect(() => {
-    if (selectedNamespace) {
-      localStorage.setItem("selectedNamespace", selectedNamespace);
+    if (selectedNamespaces.length > 0) {
+      localStorage.setItem(
+        "selectedNamespaces",
+        JSON.stringify(selectedNamespaces),
+      );
     }
-  }, [selectedNamespace]);
+  }, [selectedNamespaces]);
 
   const filteredWorkflows = workflows.filter((workflowWithInstances) => {
     const workflow = workflowWithInstances.workflow;
@@ -130,12 +156,15 @@ export default function Page() {
         case "":
           return (
             workflow.metadata?.name?.toLowerCase().includes(value) ||
+            workflow.metadata?.namespace?.toLowerCase().includes(value) ||
             workflow.spec.crdRef?.apiGroup.toLowerCase().includes(value) ||
             workflow.spec.crdRef?.kind.toLowerCase().includes(value) ||
             workflow.spec.crdRef?.version.toLowerCase().includes(value)
           );
         case "name":
           return workflow.metadata?.name?.toLowerCase().includes(value);
+        case "namespace":
+          return workflow.metadata?.namespace?.toLowerCase().includes(value);
         case "parentapigroup":
           return workflow.spec.crdRef?.apiGroup.toLowerCase().includes(value);
         case "parentkind":
@@ -169,7 +198,11 @@ export default function Page() {
   };
 
   // Fetch workflow instances when a workflow is expanded.
-  const handleToggleRow = async (workflowId: string, instanceCount: number) => {
+  const handleToggleRow = async (
+    workflowId: string,
+    instanceCount: number,
+    namespace: string,
+  ) => {
     if (instanceCount === 0) {
       return;
     }
@@ -193,7 +226,7 @@ export default function Page() {
 
       try {
         const response = await fetch(
-          `/api/koreo/${selectedNamespace}/workflows/${workflowId}/instances`,
+          `/api/koreo/${namespace}/workflows/${workflowId}/instances`,
         );
         if (!response.ok) throw new Error("Failed to fetch instances");
         const instances = await response.json();
@@ -225,6 +258,11 @@ export default function Page() {
     setSelectedYaml(null);
   };
 
+  const handleNamespaceChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value as string[];
+    setSelectedNamespaces(value);
+  };
+
   return (
     <BreadcrumbsPage>
       <AppPage
@@ -232,16 +270,36 @@ export default function Page() {
         documentTitle="Workflows"
         heading="Workflows"
       >
-        <Box sx={{ maxWidth: 300 }}>
+        <Box sx={{ maxWidth: 500 }}>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="namespace-selector-label">Namespace</InputLabel>
+            <InputLabel id="namespace-selector-label">Namespaces</InputLabel>
             <Select
               labelId="namespace-selector-label"
-              value={selectedNamespace}
-              label="Namespace"
+              multiple
+              value={selectedNamespaces}
+              onChange={handleNamespaceChange}
+              input={<OutlinedInput label="Namespaces" />}
+              renderValue={(selected) => (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                  {(selected as string[]).map((value) => (
+                    <Chip
+                      key={value}
+                      label={value}
+                      onDelete={(event) => {
+                        event.stopPropagation();
+                        setSelectedNamespaces((prev) =>
+                          prev.filter((namespace) => namespace !== value),
+                        );
+                      }}
+                      onMouseDown={(event) => {
+                        event.stopPropagation();
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
               variant={"outlined"}
               disabled={loadingNamespaces}
-              onChange={(e) => setSelectedNamespace(e.target.value)}
               sx={{
                 backgroundColor: "white",
               }}
@@ -277,6 +335,7 @@ export default function Page() {
                 setActiveFilters={setActiveFilters}
                 validFields={[
                   "name",
+                  "namespace",
                   "parentApiGroup",
                   "parentKind",
                   "parentVersion",
@@ -294,6 +353,12 @@ export default function Page() {
                         onClick={() => handleHeaderClick("name")}
                       >
                         Name
+                      </TableCell>
+                      <TableCell
+                        sx={{ cursor: "pointer" }}
+                        onClick={() => handleHeaderClick("namespace")}
+                      >
+                        Namespace
                       </TableCell>
                       <TableCell
                         sx={{ cursor: "pointer" }}
@@ -335,10 +400,9 @@ export default function Page() {
                       )
                       .map((workflowWithInstances) => (
                         <Fragment
-                          key={workflowWithInstances.workflow.metadata?.name}
+                          key={`${workflowWithInstances.workflow.metadata?.namespace}-${workflowWithInstances.workflow.metadata?.name}`}
                         >
                           <TableRow
-                            key={workflowWithInstances.workflow.metadata?.name}
                             sx={{
                               textDecoration: "none",
                               "&:hover": {
@@ -354,17 +418,25 @@ export default function Page() {
                                 workflowWithInstances.workflow.metadata?.name ||
                                   "",
                                 workflowWithInstances.instances || 0,
+                                workflowWithInstances.workflow.metadata
+                                  ?.namespace || "",
                               )
                             }
                           >
                             <TableCell>
                               <Box
                                 component={StyledLink}
-                                href={`/workflow/${selectedNamespace}/${workflowWithInstances.workflow.metadata?.name}`}
+                                href={`/workflow/${workflowWithInstances.workflow.metadata?.namespace}/${workflowWithInstances.workflow.metadata?.name}`}
                                 onClick={(event) => event.stopPropagation()}
                               >
                                 {workflowWithInstances.workflow.metadata?.name}
                               </Box>
+                            </TableCell>
+                            <TableCell>
+                              {
+                                workflowWithInstances.workflow.metadata
+                                  ?.namespace
+                              }
                             </TableCell>
                             <TableCell>
                               {workflowWithInstances.workflow.spec.crdRef
@@ -394,7 +466,7 @@ export default function Page() {
                                 paddingTop: 0,
                                 border: "none",
                               }}
-                              colSpan={6}
+                              colSpan={7}
                             >
                               <Collapse
                                 in={
@@ -550,8 +622,10 @@ export default function Page() {
                 </Dialog>
               </TableContainer>
             </>
-          ) : selectedNamespace && !loadingWorkflows ? (
-            <Typography>No workflows found for this namespace.</Typography>
+          ) : selectedNamespaces.length > 0 && !loadingWorkflows ? (
+            <Typography>
+              No workflows found for the selected namespaces.
+            </Typography>
           ) : null}
         </Box>
       </AppPage>
