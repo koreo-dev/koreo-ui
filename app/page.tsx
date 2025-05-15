@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Fragment, useRef } from "react";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import {
   FormControl,
   InputLabel,
@@ -46,6 +46,7 @@ import { localizeTimestamp } from "@/utils/datetime";
 import FilterInput, { FilterCriteria } from "@/components/FilterInput";
 import { getResourceStatus } from "@/utils/status";
 import BreadcrumbsPage from "@/components/view/BreadcrumbsPage";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 // @ts-ignore
 const fetcher = (...args: any[]) => fetch(...args).then((res) => res.json());
@@ -81,6 +82,35 @@ export default function Page() {
       refreshInterval: 60000,
     },
   );
+
+  const handleRefresh = () => {
+    // Force re-fetch namespaces
+    mutate("/api/namespaces");
+
+    // Force re-fetch workflows if namespaces are selected
+    if (selectedNamespaces.length > 0) {
+      const queryParams = new URLSearchParams();
+      selectedNamespaces.forEach((namespace) => {
+        queryParams.append("namespace", namespace);
+      });
+      setLoadingWorkflows(true);
+      fetch(`/api/koreo/workflows?${queryParams.toString()}`)
+        .then((response) => {
+          if (!response.ok) throw new Error("Failed to fetch workflows");
+          return response.json();
+        })
+        .then((data) => {
+          setWorkflows(data || []);
+        })
+        .catch((error) => {
+          console.error(error);
+          setWorkflows([]);
+        })
+        .finally(() => {
+          setLoadingWorkflows(false);
+        });
+    }
+  };
 
   useEffect(() => {
     if (namespaces && namespaces.length > 0) {
@@ -270,7 +300,9 @@ export default function Page() {
         documentTitle="Workflows"
         heading="Workflows"
       >
-        <Box sx={{ maxWidth: 500 }}>
+        <Box
+          sx={{ maxWidth: 500, display: "flex", alignItems: "center", gap: 2 }}
+        >
           <FormControl fullWidth margin="normal">
             <InputLabel id="namespace-selector-label">Namespaces</InputLabel>
             <Select
@@ -311,6 +343,12 @@ export default function Page() {
               ))}
             </Select>
           </FormControl>
+          <IconButton
+            onClick={handleRefresh}
+            disabled={loadingNamespaces || loadingWorkflows}
+          >
+            <RefreshIcon />
+          </IconButton>
         </Box>
 
         <Box mt={2}>
