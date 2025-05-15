@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import { DefaultEdgeArrowOptions, NodeTypes } from "@/lib/diagrams";
 import {
   ReactFlow,
@@ -10,6 +16,7 @@ import {
   Edge,
   MiniMap,
   getOutgoers,
+  ReactFlowInstance,
 } from "@xyflow/react";
 import { getLayoutedElements } from "@/lib/dagre";
 import "@xyflow/react/dist/style.css";
@@ -17,6 +24,7 @@ import "@xyflow/react/dist/base.css";
 import useSWR from "swr";
 import SkeletonFlow from "@/components/SkeletonFlow";
 import { KoreoNode } from "@/components/CustomNode";
+import { useSidebar } from "@/context/sidebar-context";
 
 const MINI_MAP_NODE_THRESHOLD = 10;
 
@@ -39,6 +47,8 @@ const GraphDiagram: React.FC<React.PropsWithChildren<GraphDiagramProps>> = ({
   documentTitle,
   children,
 }) => {
+  const { isCollapsed } = useSidebar();
+  const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [initialized, setInitialized] = useState(false);
@@ -261,11 +271,25 @@ const GraphDiagram: React.FC<React.PropsWithChildren<GraphDiagramProps>> = ({
     setSelectedEdge(null);
   }, [setSelectedEdge]);
 
+  // Re-fit the view after sidebar expands/collapses or graphEndpoint changes
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (reactFlowInstanceRef.current) {
+        reactFlowInstanceRef.current.fitView();
+      }
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [isCollapsed, graphEndpoint]);
+
   return isLoading ? (
-    <SkeletonFlow />
+    <SkeletonFlow reactFlowInstanceRef={reactFlowInstanceRef} />
   ) : (
     <div style={{ height: "100%", width: "100%" }}>
       <ReactFlow
+        onInit={(instance) => {
+          reactFlowInstanceRef.current = instance;
+          instance.fitView();
+        }}
         nodes={visibleNodes}
         edges={visibleEdges}
         onNodesChange={onNodesChange}
