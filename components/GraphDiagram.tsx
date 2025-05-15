@@ -271,7 +271,7 @@ const GraphDiagram: React.FC<React.PropsWithChildren<GraphDiagramProps>> = ({
     setSelectedEdge(null);
   }, [setSelectedEdge]);
 
-  // Re-fit the view after sidebar expands/collapses
+  // Re-fit the view after sidebar expands/collapses or graphEndpoint changes
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (reactFlowInstanceRef.current) {
