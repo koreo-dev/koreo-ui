@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Box, Drawer, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import Menu from "@/components/nav/Menu";
@@ -22,26 +21,15 @@ const SidebarHeader = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
-const SIDEBAR_COLLAPSE_KEY = "koreo-sidebar-collapsed";
+type NavSidebarProps = {
+  isCollapsed: boolean | null;
+  toggleSidebar: () => void;
+};
 
-export default function NavSidebar() {
-  const [isCollapsed, setIsCollapsed] = useState<boolean | null>(null);
-
-  // Load collapse state from sessionStorage on first render
-  useEffect(() => {
-    const stored = sessionStorage.getItem(SIDEBAR_COLLAPSE_KEY);
-    setIsCollapsed(stored === "true");
-  }, []);
-
-  // Update sessionStorage when collapse state changes
-  const toggleSidebar = () => {
-    setIsCollapsed((prev) => {
-      const newVal = !prev;
-      sessionStorage.setItem(SIDEBAR_COLLAPSE_KEY, newVal.toString());
-      return newVal;
-    });
-  };
-
+const NavSidebar: React.FC<React.PropsWithChildren<NavSidebarProps>> = ({
+  isCollapsed,
+  toggleSidebar,
+}) => {
   const expandedWidth = 300;
   const collapsedWidth = 64;
 
@@ -144,4 +132,6 @@ export default function NavSidebar() {
       )}
     </Drawer>
   );
-}
+};
+
+export default NavSidebar;

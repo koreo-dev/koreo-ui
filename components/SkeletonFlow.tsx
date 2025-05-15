@@ -1,10 +1,12 @@
 "use client";
+import { MutableRefObject } from "react";
 import {
   ReactFlow,
   Edge,
   Node,
   useEdgesState,
   useNodesState,
+  ReactFlowInstance,
 } from "@xyflow/react";
 
 import { DefaultEdgeArrowOptions, NodeTypes } from "@/lib/diagrams";
@@ -84,7 +86,13 @@ const skeletonData: { nodes: Node[]; edges: Edge[] } = {
   ],
 };
 
-export default function SkeletonFlow() {
+type SkeletonFlowProps = {
+  reactFlowInstanceRef: MutableRefObject<ReactFlowInstance | null>;
+};
+
+const SkeletonFlow: React.FC<React.PropsWithChildren<SkeletonFlowProps>> = ({
+  reactFlowInstanceRef,
+}) => {
   const { nodes: skeletonNodes, edges: skeletonEdges } =
     getLayoutedElements(skeletonData);
   const [nodes, setNodes, onNodesChange] = useNodesState([...skeletonNodes]);
@@ -92,6 +100,10 @@ export default function SkeletonFlow() {
 
   return (
     <ReactFlow
+      onInit={(instance) => {
+        reactFlowInstanceRef.current = instance;
+        instance.fitView();
+      }}
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
@@ -104,4 +116,6 @@ export default function SkeletonFlow() {
       fitView
     />
   );
-}
+};
+
+export default SkeletonFlow;
