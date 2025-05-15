@@ -279,7 +279,7 @@ const GraphDiagram: React.FC<React.PropsWithChildren<GraphDiagramProps>> = ({
       }
     }, 0);
     return () => clearTimeout(timeout);
-  }, [isCollapsed]);
+  }, [isCollapsed, graphEndpoint]);
 
   return isLoading ? (
     <SkeletonFlow reactFlowInstanceRef={reactFlowInstanceRef} />
