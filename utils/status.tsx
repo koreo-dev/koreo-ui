@@ -37,12 +37,12 @@ export const getStatusIconAndColor = (
       />
     );
   } else if (status == "inProgress") {
-    color = "#397564";
-    icon = <LoopRoundedIcon color={"success"} sx={{ fontSize: "inherit" }} />;
+    color = "#b85d1a";
+    icon = <LoopRoundedIcon color={"warning"} sx={{ fontSize: "inherit" }} />;
   } else if (status == "error") {
-    color = "#987444";
+    color = "#a33b48";
     icon = (
-      <WarningAmberRoundedIcon color={"warning"} sx={{ fontSize: "inherit" }} />
+      <WarningAmberRoundedIcon color={"error"} sx={{ fontSize: "inherit" }} />
     );
   }
 
@@ -77,7 +77,7 @@ export const getResourceStatus = (
       );
     case NodeStatus.inProgress:
       return renderIconWithTooltip(
-        <LoopRoundedIcon sx={{ fontSize: fontSize }} color={"action"} />,
+        <LoopRoundedIcon sx={{ fontSize: fontSize }} color={"warning"} />,
       );
     case NodeStatus.error:
       return renderIconWithTooltip(

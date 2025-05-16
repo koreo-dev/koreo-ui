@@ -98,23 +98,19 @@ const InProgressNode = styled.div.withConfig({
   border-radius: 5px;
   width: 175px;
   background-color: ${({ noBackground }) =>
-    noBackground ? "#ffffff" : "#ebf7f4"};
-  color: #0c553f;
+    noBackground ? "#ffffff" : "#fff3e0"};
+  color: #9c4501;
   text-align: center;
   border-width: 1px;
   border-style: solid;
-  border-color: #1a936f;
+  border-color: #ed6c02;
   cursor: ${({ hasOnClick }) => (hasOnClick ? "pointer" : "auto")};
 
   &:hover:not(:has(.collapse-handle:hover)):not(:has(.node-status:hover)) {
     background-color: ${({ hasOnClick, noBackground }) => {
-      if (!hasOnClick) {
-        return;
-      }
-      if (noBackground) {
-        return "#fafafa";
-      }
-      return "#d9f0eb";
+      if (!hasOnClick) return;
+      if (noBackground) return "#fafafa";
+      return "#ffe9cc";
     }}
 `;
 
@@ -125,23 +121,19 @@ const ErrorNode = styled.div.withConfig({
   border-radius: 5px;
   width: 175px;
   background-color: ${({ noBackground }) =>
-    noBackground ? "#ffffff" : "#fff2e1"};
-  color: #6c3e00;
+    noBackground ? "#ffffff" : "#fdecee"};
+  color: #8b1a2d;
   text-align: center;
   border-width: 1px;
   border-style: solid;
-  border-color: #ff9f1c;
+  border-color: #ff1744;
   cursor: ${({ hasOnClick }) => (hasOnClick ? "pointer" : "auto")};
 
   &:hover:not(:has(.collapse-handle:hover)):not(:has(.node-status:hover)) {
     background-color: ${({ hasOnClick, noBackground }) => {
-      if (!hasOnClick) {
-        return;
-      }
-      if (noBackground) {
-        return "#fafafa";
-      }
-      return "#ffe6c8";
+      if (!hasOnClick) return;
+      if (noBackground) return "#fafafa";
+      return "#fbdde1";
     }}
 `;
 
