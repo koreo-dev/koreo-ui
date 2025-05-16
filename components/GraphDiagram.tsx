@@ -49,6 +49,7 @@ const GraphDiagram: React.FC<React.PropsWithChildren<GraphDiagramProps>> = ({
 }) => {
   const { isCollapsed } = useSidebar();
   const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
+  const lastFittedEndpointRef = useRef<string | null>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [initialized, setInitialized] = useState(false);
@@ -271,15 +272,29 @@ const GraphDiagram: React.FC<React.PropsWithChildren<GraphDiagramProps>> = ({
     setSelectedEdge(null);
   }, [setSelectedEdge]);
 
-  // Re-fit the view after sidebar expands/collapses or graphEndpoint changes
+  // Re-fit the view if graphEndpoint changes
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (reactFlowInstanceRef.current) {
-        reactFlowInstanceRef.current.fitView();
-      }
-    }, 0);
-    return () => clearTimeout(timeout);
-  }, [isCollapsed, graphEndpoint]);
+    const shouldFit =
+      graphEndpoint !== lastFittedEndpointRef.current &&
+      visibleNodes.length > 0 &&
+      visibleEdges.length > 0;
+
+    if (shouldFit && reactFlowInstanceRef.current) {
+      setTimeout(() => {
+        reactFlowInstanceRef.current!.fitView();
+        lastFittedEndpointRef.current = graphEndpoint;
+      }, 0);
+    }
+  }, [graphEndpoint, visibleNodes, visibleEdges]);
+
+  // Re-fit the view after sidebar expands/collapses
+  useEffect(() => {
+    if (reactFlowInstanceRef.current) {
+      setTimeout(() => {
+        reactFlowInstanceRef.current!.fitView();
+      }, 0);
+    }
+  }, [isCollapsed]);
 
   return isLoading ? (
     <SkeletonFlow reactFlowInstanceRef={reactFlowInstanceRef} />

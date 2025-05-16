@@ -19,19 +19,17 @@ export const getKoreoWorkflowGraph = async (
   return {
     nodes: inflatedGraph.nodes
       .map((node) => {
-        return createNode(
-          node.id,
-          node.label,
-          node.krm ? parseCrdForStatus(node.krm) : NodeStatus.none,
-          node.krm,
-          {
-            overrideDisplayText: node.type,
-            noBackground: node.metadata
-              ? (node.metadata.managedResource as boolean) &&
-                (node.metadata.readonly as boolean)
-              : false,
-          },
-        );
+        let status = NodeStatus.none;
+        if (!node.type.isKoreoType) {
+          status = node.krm ? parseCrdForStatus(node.krm) : NodeStatus.interim;
+        }
+        return createNode(node.id, node.label, status, node.krm, {
+          overrideDisplayText: node.type.name,
+          noBackground: node.metadata
+            ? (node.metadata.managedResource as boolean) &&
+              (node.metadata.readonly as boolean)
+            : false,
+        });
       })
       .sort((a, b) => a.id.localeCompare(b.id)),
     edges: inflatedGraph.edges
@@ -57,19 +55,17 @@ export const getKoreoWorkflowInstanceGraph = async (
   return {
     nodes: inflatedGraph.nodes
       .map((node) => {
-        return createNode(
-          node.id,
-          node.label,
-          node.krm ? parseCrdForStatus(node.krm) : NodeStatus.none,
-          node.krm,
-          {
-            overrideDisplayText: node.type,
-            noBackground: node.metadata
-              ? (node.metadata.managedResource as boolean) &&
-                (node.metadata.readonly as boolean)
-              : false,
-          },
-        );
+        let status = NodeStatus.none;
+        if (!node.type.isKoreoType) {
+          status = node.krm ? parseCrdForStatus(node.krm) : NodeStatus.interim;
+        }
+        return createNode(node.id, node.label, status, node.krm, {
+          overrideDisplayText: node.type.name,
+          noBackground: node.metadata
+            ? (node.metadata.managedResource as boolean) &&
+              (node.metadata.readonly as boolean)
+            : false,
+        });
       })
       .sort((a, b) => a.id.localeCompare(b.id)),
     edges: inflatedGraph.edges
