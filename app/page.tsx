@@ -346,6 +346,7 @@ export default function Page() {
           <IconButton
             onClick={handleRefresh}
             disabled={loadingNamespaces || loadingWorkflows}
+            sx={{ mt: 0.75 }}
           >
             <RefreshIcon />
           </IconButton>
