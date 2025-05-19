@@ -598,7 +598,7 @@ export default function Page() {
                   </TableBody>
                 </Table>
                 <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
+                  rowsPerPageOptions={[5, 10, 25, 50, 100]}
                   component="div"
                   count={filteredWorkflows.length}
                   rowsPerPage={rowsPerPage}
