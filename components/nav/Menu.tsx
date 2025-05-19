@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Box, List, ListItem, Typography, alpha } from "@mui/material";
+import { Box, List, ListItem, Typography, alpha, Tooltip } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import RouteOutlinedIcon from "@mui/icons-material/RouteOutlined";
 import ConstructionOutlinedIcon from "@mui/icons-material/ConstructionOutlined";
@@ -90,6 +90,9 @@ export default function Menu({ collapsed }: MenuProps) {
     ) {
       return true;
     }
+    if (itemId === "/function" && pathName.startsWith("/function/")) {
+      return true;
+    }
     if (
       itemId === "/resource-template" &&
       pathName.startsWith("/resource-template/")
@@ -111,36 +114,48 @@ export default function Menu({ collapsed }: MenuProps) {
         const Icon = getIconForItemType(item.type);
         const selected = isSelected(item.id);
 
+        const menuItemContent = (
+          <StyledMenuItem
+            onClick={() => handleClick(item.id, item.disabled)}
+            className={`${selected ? "selected" : ""} ${
+              item.disabled ? "disabled" : ""
+            }`}
+            sx={{
+              width: "100%",
+              justifyContent: collapsed ? "center" : "flex-start",
+            }}
+          >
+            {Icon && (
+              <Box
+                component={Icon}
+                color="inherit"
+                sx={{
+                  fontSize: "1.4rem",
+                  mr: collapsed ? 0 : 1.5,
+                }}
+              />
+            )}
+            {!collapsed && (
+              <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
+                {item.label}
+              </Typography>
+            )}
+          </StyledMenuItem>
+        );
+
         return (
           <ListItem
             key={item.id}
             disablePadding
             sx={{ justifyContent: collapsed ? "center" : "flex-start" }}
           >
-            <StyledMenuItem
-              onClick={() => handleClick(item.id, item.disabled)}
-              className={`${selected ? "selected" : ""} ${item.disabled ? "disabled" : ""}`}
-              sx={{
-                width: "100%",
-                justifyContent: collapsed ? "center" : "flex-start",
-              }}
-            >
-              {Icon && (
-                <Box
-                  component={Icon}
-                  color="inherit"
-                  sx={{
-                    fontSize: "1.4rem",
-                    mr: collapsed ? 0 : 1.5,
-                  }}
-                />
-              )}
-              {!collapsed && (
-                <Typography variant="body2" sx={{ whiteSpace: "nowrap" }}>
-                  {item.label}
-                </Typography>
-              )}
-            </StyledMenuItem>
+            {collapsed ? (
+              <Tooltip title={item.label} placement="right">
+                {menuItemContent}
+              </Tooltip>
+            ) : (
+              menuItemContent
+            )}
           </ListItem>
         );
       })}
