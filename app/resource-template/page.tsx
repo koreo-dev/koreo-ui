@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import useSWR from "swr";
 import {
   FormControl,
@@ -17,6 +17,10 @@ import {
   TableRow,
   TablePagination,
   Box,
+  IconButton,
+  OutlinedInput,
+  Chip,
+  SelectChangeEvent,
 } from "@mui/material";
 import ConstructionOutlinedIcon from "@mui/icons-material/ConstructionOutlined";
 import StyledLink from "@/components/StyledLink";
@@ -26,12 +30,13 @@ import { localizeTimestamp, getLastModifiedTime } from "@/utils/datetime";
 import FilterInput, { FilterCriteria } from "@/components/FilterInput";
 import { ResourceTemplate } from "@koreo/koreo-ts";
 import BreadcrumbsPage from "@/components/view/BreadcrumbsPage";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 // @ts-ignore
 const fetcher = (...args: any[]) => fetch(...args).then((res) => res.json());
 
 export default function Page() {
-  const [selectedNamespace, setSelectedNamespace] = useState<string>("");
+  const [selectedNamespaces, setSelectedNamespaces] = useState<string[]>([]);
   const [resourceTemplates, setResourceTemplates] = useState<
     ResourceTemplate[]
   >([]);
@@ -45,54 +50,75 @@ export default function Page() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const { data: namespaces, isLoading: loadingNamespaces } = useSWR<string[]>(
-    "/api/namespaces",
-    fetcher,
-    {
-      refreshInterval: 60000,
-    },
-  );
+  const {
+    data: namespaces,
+    isLoading: loadingNamespaces,
+    mutate: refetchNamespaces,
+  } = useSWR<string[]>("/api/namespaces", fetcher, {
+    refreshInterval: 60000,
+  });
 
   useEffect(() => {
     if (namespaces && namespaces.length > 0) {
-      // Set the selected namespace from localStorage if there is one
-      const savedNamespace = localStorage.getItem("selectedNamespace");
-      if (savedNamespace !== null) {
-        setSelectedNamespace(savedNamespace);
+      // Set the selected namespaces from localStorage if there are any
+      const savedNamespaces = localStorage.getItem("selectedNamespaces");
+      if (savedNamespaces !== null) {
+        try {
+          const parsedNamespaces = JSON.parse(savedNamespaces);
+          setSelectedNamespaces(
+            Array.isArray(parsedNamespaces)
+              ? parsedNamespaces
+              : [parsedNamespaces],
+          );
+        } catch (e) {
+          // If there's an error parsing, just use the first namespace
+          setSelectedNamespaces([namespaces[0]]);
+        }
       } else {
         // Otherwise default to first namespace in the list
-        setSelectedNamespace(namespaces[0]);
+        setSelectedNamespaces([namespaces[0]]);
       }
     }
   }, [namespaces]);
 
-  useEffect(() => {
-    const fetchResourceTemplates = async () => {
-      setLoadingResourceTemplates(true);
-      try {
-        const response = await fetch(
-          `/api/koreo/${selectedNamespace}/resource-templates`,
-        );
-        if (!response.ok) throw new Error("Failed to fetch resource templates");
-        const data = await response.json();
-        setResourceTemplates(data || []);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoadingResourceTemplates(false);
-      }
-    };
-
-    if (selectedNamespace) {
-      fetchResourceTemplates();
+  const fetchResourceTemplates = useCallback(async () => {
+    if (!selectedNamespaces.length) {
+      // Clear resource templates when no namespaces are selected
+      setResourceTemplates([]);
+      return;
     }
-  }, [selectedNamespace]);
+
+    setLoadingResourceTemplates(true);
+    try {
+      const queryParams = new URLSearchParams();
+      selectedNamespaces.forEach((namespace) => {
+        queryParams.append("namespace", namespace);
+      });
+      const response = await fetch(
+        `/api/koreo/resource-templates?${queryParams.toString()}`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch resource templates");
+      const data = await response.json();
+      setResourceTemplates(data || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingResourceTemplates(false);
+    }
+  }, [selectedNamespaces]);
 
   useEffect(() => {
-    if (selectedNamespace) {
-      localStorage.setItem("selectedNamespace", selectedNamespace);
+    fetchResourceTemplates();
+  }, [fetchResourceTemplates, selectedNamespaces]);
+
+  useEffect(() => {
+    if (selectedNamespaces.length > 0) {
+      localStorage.setItem(
+        "selectedNamespaces",
+        JSON.stringify(selectedNamespaces),
+      );
     }
-  }, [selectedNamespace]);
+  }, [selectedNamespaces]);
 
   const filteredTemplates = resourceTemplates.filter((template) => {
     if (activeFilters.length === 0) return true;
@@ -103,11 +129,14 @@ export default function Page() {
         case "":
           return (
             template.metadata?.name?.toLowerCase().includes(value) ||
+            template.metadata?.namespace?.toLowerCase().includes(value) ||
             template.spec.template.apiVersion.toLowerCase().includes(value) ||
             template.spec.template.kind.toLowerCase().includes(value)
           );
         case "name":
           return template.metadata?.name?.toLowerCase().includes(value);
+        case "namespace":
+          return template.metadata?.namespace?.toLowerCase().includes(value);
         case "apiversion":
           return template.spec.template.apiVersion
             .toLowerCase()
@@ -136,6 +165,11 @@ export default function Page() {
     filterInputRef.current?.focus();
   };
 
+  const handleNamespaceChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value as string[];
+    setSelectedNamespaces(value);
+  };
+
   return (
     <BreadcrumbsPage>
       <AppPage
@@ -143,16 +177,38 @@ export default function Page() {
         documentTitle="Resource Templates"
         heading="Resource Templates"
       >
-        <Box sx={{ maxWidth: 300 }}>
+        <Box
+          sx={{ maxWidth: 500, display: "flex", alignItems: "center", gap: 2 }}
+        >
           <FormControl fullWidth margin="normal">
-            <InputLabel id="namespace-selector-label">Namespace</InputLabel>
+            <InputLabel id="namespace-selector-label">Namespaces</InputLabel>
             <Select
               labelId="namespace-selector-label"
-              value={selectedNamespace}
-              label="Namespace"
+              multiple
+              value={selectedNamespaces}
+              onChange={handleNamespaceChange}
+              input={<OutlinedInput label="Namespaces" />}
+              renderValue={(selected) => (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                  {(selected as string[]).map((value) => (
+                    <Chip
+                      key={value}
+                      label={value}
+                      onDelete={(event) => {
+                        event.stopPropagation();
+                        setSelectedNamespaces((prev) =>
+                          prev.filter((namespace) => namespace !== value),
+                        );
+                      }}
+                      onMouseDown={(event) => {
+                        event.stopPropagation();
+                      }}
+                    />
+                  ))}
+                </Box>
+              )}
               variant={"outlined"}
               disabled={loadingNamespaces}
-              onChange={(e) => setSelectedNamespace(e.target.value)}
               sx={{
                 backgroundColor: "white",
               }}
@@ -164,6 +220,16 @@ export default function Page() {
               ))}
             </Select>
           </FormControl>
+          <IconButton
+            onClick={() => {
+              refetchNamespaces();
+              fetchResourceTemplates();
+            }}
+            disabled={loadingNamespaces || loadingResourceTemplates}
+            sx={{ mt: 0.75 }}
+          >
+            <RefreshIcon />
+          </IconButton>
         </Box>
 
         <Box mt={2}>
@@ -186,7 +252,7 @@ export default function Page() {
                 setFilterInput={setFilterInput}
                 activeFilters={activeFilters}
                 setActiveFilters={setActiveFilters}
-                validFields={["name", "apiVersion", "kind"]}
+                validFields={["name", "namespace", "apiVersion", "kind"]}
                 placeholderExample="kind:bucket"
               />
               <TableContainer>
@@ -198,6 +264,12 @@ export default function Page() {
                         onClick={() => handleHeaderClick("name")}
                       >
                         Name
+                      </TableCell>
+                      <TableCell
+                        sx={{ cursor: "pointer" }}
+                        onClick={() => handleHeaderClick("namespace")}
+                      >
+                        Namespace
                       </TableCell>
                       <TableCell
                         sx={{ cursor: "pointer" }}
@@ -232,6 +304,9 @@ export default function Page() {
                             </Box>
                           </TableCell>
                           <TableCell>
+                            {template.metadata?.namespace || ""}
+                          </TableCell>
+                          <TableCell>
                             {template.spec.template.apiVersion}
                           </TableCell>
                           <TableCell>{template.spec.template.kind}</TableCell>
@@ -248,7 +323,7 @@ export default function Page() {
                   </TableBody>
                 </Table>
                 <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
+                  rowsPerPageOptions={[5, 10, 25, 50, 100]}
                   component="div"
                   count={filteredTemplates.length}
                   rowsPerPage={rowsPerPage}
@@ -258,9 +333,9 @@ export default function Page() {
                 />
               </TableContainer>
             </>
-          ) : selectedNamespace && !loadingResourceTemplates ? (
+          ) : selectedNamespaces.length > 0 && !loadingResourceTemplates ? (
             <Typography>
-              No resource templates found for this namespace.
+              No resource templates found for the selected namespaces.
             </Typography>
           ) : null}
         </Box>
