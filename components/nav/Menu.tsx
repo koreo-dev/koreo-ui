@@ -6,12 +6,19 @@ import { Box, List, ListItem, Typography, alpha } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import RouteOutlinedIcon from "@mui/icons-material/RouteOutlined";
 import ConstructionOutlinedIcon from "@mui/icons-material/ConstructionOutlined";
+import FunctionsOutlinedIcon from "@mui/icons-material/FunctionsOutlined";
 
 const menuItems = [
   {
     id: "/",
     label: "Workflows",
     type: "workflows",
+    disabled: false,
+  },
+  {
+    id: "/function",
+    label: "Functions",
+    type: "functions",
     disabled: false,
   },
   {
@@ -53,6 +60,8 @@ const getIconForItemType = (itemType: string) => {
   switch (itemType) {
     case "workflows":
       return RouteOutlinedIcon;
+    case "functions":
+      return FunctionsOutlinedIcon;
     case "resource-templates":
       return ConstructionOutlinedIcon;
     default:

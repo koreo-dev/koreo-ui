@@ -6,8 +6,17 @@ export const localizeTimestamp = (
   if (!utcTimestamp) {
     return "unknown";
   }
+
   const date = new Date(utcTimestamp);
-  return date.toLocaleString(undefined, { timeZoneName: "short" });
+
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 };
 
 export const getLastModifiedTime = (k8sObject: any): string | undefined => {
