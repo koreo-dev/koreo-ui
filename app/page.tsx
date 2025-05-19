@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, Fragment, useRef } from "react";
-import useSWR, { mutate } from "swr";
+import { useState, useEffect, Fragment, useRef, useCallback } from "react";
+import useSWR from "swr";
 import {
   FormControl,
   InputLabel,
@@ -75,42 +75,13 @@ export default function Page() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const { data: namespaces, isLoading: loadingNamespaces } = useSWR<string[]>(
-    "/api/namespaces",
-    fetcher,
-    {
-      refreshInterval: 60000,
-    },
-  );
-
-  const handleRefresh = () => {
-    // Force re-fetch namespaces
-    mutate("/api/namespaces");
-
-    // Force re-fetch workflows if namespaces are selected
-    if (selectedNamespaces.length > 0) {
-      const queryParams = new URLSearchParams();
-      selectedNamespaces.forEach((namespace) => {
-        queryParams.append("namespace", namespace);
-      });
-      setLoadingWorkflows(true);
-      fetch(`/api/koreo/workflows?${queryParams.toString()}`)
-        .then((response) => {
-          if (!response.ok) throw new Error("Failed to fetch workflows");
-          return response.json();
-        })
-        .then((data) => {
-          setWorkflows(data || []);
-        })
-        .catch((error) => {
-          console.error(error);
-          setWorkflows([]);
-        })
-        .finally(() => {
-          setLoadingWorkflows(false);
-        });
-    }
-  };
+  const {
+    data: namespaces,
+    isLoading: loadingNamespaces,
+    mutate: refetchNamespaces,
+  } = useSWR<string[]>("/api/namespaces", fetcher, {
+    refreshInterval: 60000,
+  });
 
   useEffect(() => {
     if (namespaces && namespaces.length > 0) {
@@ -135,37 +106,37 @@ export default function Page() {
     }
   }, [namespaces]);
 
-  useEffect(() => {
-    const fetchWorkflows = async () => {
-      if (!selectedNamespaces.length) {
-        // Clear workflows when no namespaces are selected
-        setWorkflows([]);
-        return;
-      }
+  const fetchWorkflows = useCallback(async () => {
+    if (!selectedNamespaces.length) {
+      // Clear workflows when no namespaces are selected
+      setWorkflows([]);
+      return;
+    }
 
-      setLoadingWorkflows(true);
-      try {
-        const queryParams = new URLSearchParams();
-        selectedNamespaces.forEach((namespace) => {
-          queryParams.append("namespace", namespace);
-        });
+    setLoadingWorkflows(true);
+    try {
+      const queryParams = new URLSearchParams();
+      selectedNamespaces.forEach((namespace) => {
+        queryParams.append("namespace", namespace);
+      });
 
-        const response = await fetch(
-          `/api/koreo/workflows?${queryParams.toString()}`,
-        );
-        if (!response.ok) throw new Error("Failed to fetch workflows");
-        const data = await response.json();
-        setWorkflows(data || []);
-      } catch (error) {
-        console.error(error);
-        setWorkflows([]);
-      } finally {
-        setLoadingWorkflows(false);
-      }
-    };
-
-    fetchWorkflows();
+      const response = await fetch(
+        `/api/koreo/workflows?${queryParams.toString()}`,
+      );
+      if (!response.ok) throw new Error("Failed to fetch workflows");
+      const data = await response.json();
+      setWorkflows(data || []);
+    } catch (error) {
+      console.error(error);
+      setWorkflows([]);
+    } finally {
+      setLoadingWorkflows(false);
+    }
   }, [selectedNamespaces]);
+
+  useEffect(() => {
+    fetchWorkflows();
+  }, [fetchWorkflows, selectedNamespaces]);
 
   useEffect(() => {
     if (selectedNamespaces.length > 0) {
@@ -344,7 +315,10 @@ export default function Page() {
             </Select>
           </FormControl>
           <IconButton
-            onClick={handleRefresh}
+            onClick={() => {
+              refetchNamespaces();
+              fetchWorkflows();
+            }}
             disabled={loadingNamespaces || loadingWorkflows}
             sx={{ mt: 0.75 }}
           >
@@ -624,7 +598,7 @@ export default function Page() {
                   </TableBody>
                 </Table>
                 <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
+                  rowsPerPageOptions={[5, 10, 25, 50, 100]}
                   component="div"
                   count={filteredWorkflows.length}
                   rowsPerPage={rowsPerPage}

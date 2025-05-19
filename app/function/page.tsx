@@ -22,13 +22,13 @@ import {
   Chip,
   SelectChangeEvent,
 } from "@mui/material";
-import ConstructionOutlinedIcon from "@mui/icons-material/ConstructionOutlined";
+import FunctionsOutlinedIcon from "@mui/icons-material/FunctionsOutlined";
 import StyledLink from "@/components/StyledLink";
 import "../globals.css";
 import AppPage from "@/components/view/AppPage";
 import { localizeTimestamp, getLastModifiedTime } from "@/utils/datetime";
 import FilterInput, { FilterCriteria } from "@/components/FilterInput";
-import { ResourceTemplate } from "@koreo/koreo-ts";
+import { Function } from "@koreo/koreo-ts";
 import BreadcrumbsPage from "@/components/view/BreadcrumbsPage";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
@@ -37,11 +37,8 @@ const fetcher = (...args: any[]) => fetch(...args).then((res) => res.json());
 
 export default function Page() {
   const [selectedNamespaces, setSelectedNamespaces] = useState<string[]>([]);
-  const [resourceTemplates, setResourceTemplates] = useState<
-    ResourceTemplate[]
-  >([]);
-  const [loadingResourceTemplates, setLoadingResourceTemplates] =
-    useState(false);
+  const [functions, setFunctions] = useState<Function[]>([]);
+  const [loadingFunctions, setLoadingFunctions] = useState(false);
   const [filterInput, setFilterInput] = useState("");
   const [activeFilters, setActiveFilters] = useState<FilterCriteria[]>([]);
   const filterInputRef = useRef<HTMLInputElement>(null);
@@ -81,35 +78,35 @@ export default function Page() {
     }
   }, [namespaces]);
 
-  const fetchResourceTemplates = useCallback(async () => {
+  const fetchFunctions = useCallback(async () => {
     if (!selectedNamespaces.length) {
-      // Clear resource templates when no namespaces are selected
-      setResourceTemplates([]);
+      // Clear functions when no namespaces are selected
+      setFunctions([]);
       return;
     }
 
-    setLoadingResourceTemplates(true);
+    setLoadingFunctions(true);
     try {
       const queryParams = new URLSearchParams();
       selectedNamespaces.forEach((namespace) => {
         queryParams.append("namespace", namespace);
       });
       const response = await fetch(
-        `/api/koreo/resource-templates?${queryParams.toString()}`,
+        `/api/koreo/functions?${queryParams.toString()}`,
       );
-      if (!response.ok) throw new Error("Failed to fetch resource templates");
+      if (!response.ok) throw new Error("Failed to fetch functions");
       const data = await response.json();
-      setResourceTemplates(data || []);
+      setFunctions(data || []);
     } catch (error) {
       console.error(error);
     } finally {
-      setLoadingResourceTemplates(false);
+      setLoadingFunctions(false);
     }
   }, [selectedNamespaces]);
 
   useEffect(() => {
-    fetchResourceTemplates();
-  }, [fetchResourceTemplates, selectedNamespaces]);
+    fetchFunctions();
+  }, [fetchFunctions, selectedNamespaces]);
 
   useEffect(() => {
     if (selectedNamespaces.length > 0) {
@@ -120,7 +117,7 @@ export default function Page() {
     }
   }, [selectedNamespaces]);
 
-  const filteredTemplates = resourceTemplates.filter((template) => {
+  const filteredFunctions = functions.filter((func) => {
     if (activeFilters.length === 0) return true;
 
     return activeFilters.every((filter) => {
@@ -128,21 +125,16 @@ export default function Page() {
       switch (filter.field) {
         case "":
           return (
-            template.metadata?.name?.toLowerCase().includes(value) ||
-            template.metadata?.namespace?.toLowerCase().includes(value) ||
-            template.spec.template.apiVersion.toLowerCase().includes(value) ||
-            template.spec.template.kind.toLowerCase().includes(value)
+            func.metadata?.name?.toLowerCase().includes(value) ||
+            func.metadata?.namespace?.toLowerCase().includes(value) ||
+            func.kind?.toLowerCase().includes(value)
           );
         case "name":
-          return template.metadata?.name?.toLowerCase().includes(value);
+          return func.metadata?.name?.toLowerCase().includes(value);
         case "namespace":
-          return template.metadata?.namespace?.toLowerCase().includes(value);
-        case "apiversion":
-          return template.spec.template.apiVersion
-            .toLowerCase()
-            .includes(value);
+          return func.metadata?.namespace?.toLowerCase().includes(value);
         case "kind":
-          return template.spec.template.kind.toLowerCase().includes(value);
+          return func.kind?.toLowerCase().includes(value);
         default:
           return true;
       }
@@ -173,9 +165,9 @@ export default function Page() {
   return (
     <BreadcrumbsPage>
       <AppPage
-        icon={<ConstructionOutlinedIcon />}
-        documentTitle="Resource Templates"
-        heading="Resource Templates"
+        icon={<FunctionsOutlinedIcon />}
+        documentTitle="Functions"
+        heading="Functions"
       >
         <Box
           sx={{ maxWidth: 500, display: "flex", alignItems: "center", gap: 2 }}
@@ -223,9 +215,9 @@ export default function Page() {
           <IconButton
             onClick={() => {
               refetchNamespaces();
-              fetchResourceTemplates();
+              fetchFunctions();
             }}
-            disabled={loadingNamespaces || loadingResourceTemplates}
+            disabled={loadingNamespaces || loadingFunctions}
             sx={{ mt: 0.75 }}
           >
             <RefreshIcon />
@@ -233,7 +225,7 @@ export default function Page() {
         </Box>
 
         <Box mt={2}>
-          {loadingNamespaces || loadingResourceTemplates ? (
+          {loadingNamespaces || loadingFunctions ? (
             <Box
               sx={{
                 display: "flex",
@@ -244,7 +236,7 @@ export default function Page() {
             >
               <CircularProgress />
             </Box>
-          ) : resourceTemplates.length > 0 ? (
+          ) : functions.length > 0 ? (
             <>
               <FilterInput
                 ref={filterInputRef}
@@ -252,7 +244,7 @@ export default function Page() {
                 setFilterInput={setFilterInput}
                 activeFilters={activeFilters}
                 setActiveFilters={setActiveFilters}
-                validFields={["name", "namespace", "apiVersion", "kind"]}
+                validFields={["name", "namespace", "kind"]}
                 placeholderExample="kind:bucket"
               />
               <TableContainer>
@@ -273,12 +265,6 @@ export default function Page() {
                       </TableCell>
                       <TableCell
                         sx={{ cursor: "pointer" }}
-                        onClick={() => handleHeaderClick("apiVersion")}
-                      >
-                        API Version
-                      </TableCell>
-                      <TableCell
-                        sx={{ cursor: "pointer" }}
                         onClick={() => handleHeaderClick("kind")}
                       >
                         Kind
@@ -288,35 +274,32 @@ export default function Page() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {filteredTemplates
+                    {filteredFunctions
                       .slice(
                         page * rowsPerPage,
                         page * rowsPerPage + rowsPerPage,
                       )
-                      .map((template) => (
-                        <TableRow key={template.metadata?.name}>
+                      .map((func) => (
+                        <TableRow key={func.metadata?.name}>
                           <TableCell>
                             <Box
                               component={StyledLink}
-                              href={`/resource-template/${template.metadata?.namespace}/${template.metadata?.name}`}
+                              href={`/function/${func.metadata?.namespace}/${func.metadata?.name}?kind=${func.kind!}`}
                             >
-                              {template.metadata?.name}
+                              {func.metadata?.name}
                             </Box>
                           </TableCell>
                           <TableCell>
-                            {template.metadata?.namespace || ""}
+                            {func.metadata?.namespace || ""}
                           </TableCell>
-                          <TableCell>
-                            {template.spec.template.apiVersion}
-                          </TableCell>
-                          <TableCell>{template.spec.template.kind}</TableCell>
+                          <TableCell>{func.kind || ""}</TableCell>
                           <TableCell>
                             {localizeTimestamp(
-                              template.metadata?.creationTimestamp,
+                              func.metadata?.creationTimestamp,
                             )}
                           </TableCell>
                           <TableCell>
-                            {localizeTimestamp(getLastModifiedTime(template))}
+                            {localizeTimestamp(getLastModifiedTime(func))}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -325,7 +308,7 @@ export default function Page() {
                 <TablePagination
                   rowsPerPageOptions={[5, 10, 25, 50, 100]}
                   component="div"
-                  count={filteredTemplates.length}
+                  count={filteredFunctions.length}
                   rowsPerPage={rowsPerPage}
                   page={page}
                   onPageChange={handleChangePage}
@@ -333,9 +316,9 @@ export default function Page() {
                 />
               </TableContainer>
             </>
-          ) : selectedNamespaces.length > 0 && !loadingResourceTemplates ? (
+          ) : selectedNamespaces.length > 0 && !loadingFunctions ? (
             <Typography>
-              No resource templates found for the selected namespaces.
+              No functions found for the selected namespaces.
             </Typography>
           ) : null}
         </Box>
